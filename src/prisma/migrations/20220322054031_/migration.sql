@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "MonthlyPlan" ADD COLUMN     "isApproved" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isTrash" BOOLEAN NOT NULL DEFAULT false,
+ALTER COLUMN "ownCaptive" DROP NOT NULL,
+ALTER COLUMN "groupCaptive" DROP NOT NULL,
+ALTER COLUMN "thirdPartyPurchase" DROP NOT NULL,
+ALTER COLUMN "total" DROP NOT NULL;

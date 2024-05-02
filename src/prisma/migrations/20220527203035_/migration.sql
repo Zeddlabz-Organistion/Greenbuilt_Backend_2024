@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "QRCode" ADD COLUMN     "callId" INTEGER NOT NULL DEFAULT 0;

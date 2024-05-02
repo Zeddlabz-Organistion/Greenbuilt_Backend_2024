@@ -1,0 +1,31 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.staticRoutes = void 0;
+var express_1 = __importDefault(require("express"));
+var statics_1 = require("../controllers/statics");
+var staticRoutes = express_1.default.Router();
+exports.staticRoutes = staticRoutes;
+staticRoutes.post('/industryType/create', statics_1.createIndustryType);
+staticRoutes.put('/industryType/update/:industryTypeId', statics_1.updateIndustryType);
+staticRoutes.delete('/industryType/delete/:industryTypeId', statics_1.deleteIndustryType);
+staticRoutes.get('/industryType/get/:industryTypeId', statics_1.getIndustryType);
+staticRoutes.get('/industryType/get-all', statics_1.getAllIndustryTypes);
+staticRoutes.post('/sourceType/create', statics_1.createSourceType);
+staticRoutes.put('/sourceType/update/:sourceTypeId', statics_1.updateSourceType);
+staticRoutes.delete('/sourceType/delete/:sourceTypeId', statics_1.deleteSourceType);
+staticRoutes.get('/sourceType/get/:sourceTypeId', statics_1.getSourceType);
+staticRoutes.get('/sourceType/get-all', statics_1.getAllSourceTypes);
+staticRoutes.post('/uom/create', statics_1.createUOM);
+staticRoutes.put('/uom/update/:uomId', statics_1.updateUOM);
+staticRoutes.delete('/uom/delete/:uomId', statics_1.deleteUOM);
+staticRoutes.get('/uom/get/:uomId', statics_1.getUOM);
+staticRoutes.get('/uom/get-all', statics_1.getAllUOMs);
+staticRoutes.post('/packagingType/create', statics_1.createPackagingType);
+staticRoutes.put('/packagingType/update/:packagingTypeId', statics_1.updatePackagingType);
+staticRoutes.delete('/packagingType/delete/:packagingTypeId', statics_1.deletePackagingType);
+staticRoutes.get('/packagingType/get/:packagingTypeId', statics_1.getPackagingType);
+staticRoutes.get('/packagingType/get-all', statics_1.getAllPackagingTypes);
+//# sourceMappingURL=statics.js.map
