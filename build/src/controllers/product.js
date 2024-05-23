@@ -75,7 +75,7 @@ var createProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                                 if (prod.title.trim().toLowerCase() ==
                                     product.title.trim().toLowerCase()) {
                                     return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                        message: 'Product with the same name already exists.',
+                                        message: 'Product with the same name already exists.'
                                     });
                                 }
                                 return;

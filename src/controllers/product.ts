@@ -12,6 +12,7 @@ import {
 	getById,
 	updateById
 } from '../helpers/crud'
+// import { loguser } from '../helpers/logUser'
 
 interface Product {
 	title: string
@@ -46,7 +47,7 @@ export const createProduct = async (req: any, res: Response): Promise<any> => {
 						product.title.trim().toLowerCase()
 					) {
 						return res.status(SC.BAD_REQUEST).json({
-							message: 'Product with the same name already exists.',
+							message: 'Product with the same name already exists.'
 						})
 					}
 					return

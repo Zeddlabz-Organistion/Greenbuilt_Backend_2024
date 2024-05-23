@@ -36,97 +36,53 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllUsers = exports.getUserById = void 0;
+exports.getAllLogUsersData = void 0;
 var index_1 = require("../prisma/index");
-var logger_1 = require("../utils/logger");
+var crud_1 = require("../helpers/crud");
 var statusCode_1 = require("../utils/statusCode");
-var getUserById = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                id = +(req.params.userId || '1');
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4, index_1.prisma.user
-                        .findFirst({
-                        where: {
-                            id: id
-                        }
-                    })
-                        .then(function (user) {
-                        if (!user) {
-                            return res.status(statusCode_1.statusCode.NOT_FOUND).json({
-                                error: "User doesn't exist in DB!"
-                            });
-                        }
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'User fetched Successfully!',
-                            user: user
-                        });
-                    })
-                        .catch(function (err) {
-                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                        return res.status(statusCode_1.statusCode.INTERNAL_SERVER_ERROR).json({
-                            message: 'Failed to fetch the user!'
-                        });
-                    })];
-            case 2:
-                _a.sent();
-                return [3, 5];
-            case 3:
-                err_1 = _a.sent();
-                (0, logger_1.loggerUtil)(err_1, 'ERROR');
-                return [3, 5];
-            case 4:
-                (0, logger_1.loggerUtil)("Get User By Id API Called!");
-                return [7];
-            case 5: return [2];
-        }
-    });
-}); };
-exports.getUserById = getUserById;
-var getAllUsers = function (_, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var err_2;
+var logger_1 = require("../utils/logger");
+var getAllLogUsersData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var take_1, skip_1, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, 3, 4]);
-                console.log("nikhil");
-                return [4, index_1.prisma.user
-                        .findMany()
-                        .then(function (user) {
-                        if (!(user === null || user === void 0 ? void 0 : user.length)) {
-                            return res.status(statusCode_1.statusCode.NOT_FOUND).json({
-                                error: "User doesn't exist in DB!"
+                take_1 = +(req.query.limit || '10'), skip_1 = +(req.query.offset || '0');
+                return [4, (0, crud_1.getAll)(index_1.prisma.logUserData, take_1, skip_1)
+                        .then(function (data) {
+                        if (!(data === null || data === void 0 ? void 0 : data.length)) {
+                            return res.status(statusCode_1.statusCode.OK).json({
+                                message: 'log users data not found!'
                             });
                         }
-                        (0, logger_1.log)(user);
                         return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'User fetched Successfully!',
-                            user: user
+                            message: 'log users data fetched successfully!',
+                            data: data,
+                            pagination: {
+                                limit: take_1,
+                                offset: skip_1
+                            }
                         });
                     })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
-                        return res.status(statusCode_1.statusCode.INTERNAL_SERVER_ERROR).json({
-                            message: 'Failed to fetch the user!'
+                        return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                            error: 'Failed to fetch user assets!'
                         });
                     })];
             case 1:
                 _a.sent();
                 return [3, 4];
             case 2:
-                err_2 = _a.sent();
-                (0, logger_1.loggerUtil)(err_2, 'ERROR');
+                err_1 = _a.sent();
+                (0, logger_1.loggerUtil)(err_1, 'ERROR');
                 return [3, 4];
             case 3:
-                (0, logger_1.loggerUtil)("Get All User API Called!");
+                (0, logger_1.loggerUtil)("Get All User Assets API Called!");
                 return [7];
             case 4: return [2];
         }
     });
 }); };
-exports.getAllUsers = getAllUsers;
-//# sourceMappingURL=user.js.map
+exports.getAllLogUsersData = getAllLogUsersData;
+//# sourceMappingURL=logUserData.js.map

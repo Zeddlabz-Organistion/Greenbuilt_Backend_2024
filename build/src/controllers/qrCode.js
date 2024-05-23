@@ -447,7 +447,7 @@ var getGeneratedQRs = function (req, res) { return __awaiter(void 0, void 0, voi
                         where: {
                             userId: userId,
                             redeemed: redeemed
-                        },
+                        }
                     })
                         .then(function (qr) { return __awaiter(void 0, void 0, void 0, function () {
                         var arr;
@@ -529,7 +529,7 @@ var getAllGeneratedQRs = function (req, res) { return __awaiter(void 0, void 0, 
                 _a.trys.push([0, 2, 3, 4]);
                 return [4, index_1.prisma.qRCode
                         .findMany({
-                        where: __assign({}, req.body),
+                        where: __assign({}, req.body)
                     })
                         .then(function (qr) { return __awaiter(void 0, void 0, void 0, function () {
                         var arr;

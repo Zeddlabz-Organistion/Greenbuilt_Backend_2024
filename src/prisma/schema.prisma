@@ -207,3 +207,12 @@ model Notification {
   user           User     @relation(fields: [userId], references: [id])
   userId         Int
 }
+
+model LogUserData{
+  id             Int                @id @default(autoincrement())
+  userId         Int
+  name           String
+  role           String
+  timestamp      DateTime?          @default(now())
+  operation      String
+}

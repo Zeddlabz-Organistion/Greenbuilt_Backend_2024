@@ -8,6 +8,7 @@ import { loggerUtil as logger } from '../utils/logger'
 import { statusCode as SC } from '../utils/statusCode'
 import { Gender } from '../@types/enum'
 import { mailer } from '../helpers/mailer'
+import { loguser } from '../helpers/logUser'
 
 export const signup = async (req: Request, res: Response): Promise<any> => {
 	const errors = validate(req) || []
@@ -16,6 +17,7 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
 			error: errors.array()[0]?.msg
 		})
 	}
+
 	const { name, email, phoneNumber = null, password } = req.body
 	const otherFields = omit(req.body, 'password')
 	const userType = req.query?.userType
@@ -34,6 +36,7 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
 				}
 			})
 			.then(user => {
+				loguser(user.id, name, user.role || 1, 'User Signed Up', res)
 				return res.status(SC.OK).json({
 					message: 'User Signed Up, Successfully!',
 					data: user
@@ -96,6 +99,7 @@ export const signin = async (req: Request, res: Response): Promise<any> => {
 					expires: new Date(Date.now() + 900000),
 					httpOnly: true
 				})
+				loguser(user.id, user.name, user.role!, 'User Logged in', res)
 				return res.status(SC.OK).json({
 					message: 'User Logged in Successfully!',
 					token,
@@ -141,6 +145,7 @@ export const update = async (req: Request, res: Response): Promise<any> => {
 				data: reqBody
 			})
 			.then(user => {
+				loguser(user.id, user.name, user.role!, 'User Updated Successfully', res)
 				return res.status(SC.OK).json({
 					message: 'User Updated Successfully',
 					data: user

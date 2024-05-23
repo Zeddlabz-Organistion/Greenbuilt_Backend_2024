@@ -273,7 +273,7 @@ export const getGeneratedQRs = async (
 				where: {
 					userId: userId,
 					redeemed
-				},
+				}
 				// take,
 				// skip
 			})
@@ -339,7 +339,7 @@ export const getAllGeneratedQRs = async (
 			.findMany({
 				where: {
 					...req.body
-				},
+				}
 				// take,
 				// skip
 			})

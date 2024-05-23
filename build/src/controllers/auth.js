@@ -60,6 +60,7 @@ var logger_1 = require("../utils/logger");
 var statusCode_1 = require("../utils/statusCode");
 var enum_1 = require("../@types/enum");
 var mailer_1 = require("../helpers/mailer");
+var logUser_1 = require("../helpers/logUser");
 var signup = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var errors, _a, name, email, _b, phoneNumber, password, otherFields, userType, err_1;
     var _c, _d, _e, _f;
@@ -83,6 +84,7 @@ var signup = function (req, res) { return __awaiter(void 0, void 0, void 0, func
                         data: __assign({ name: name, email: email, phoneNumber: phoneNumber, gender: ((_e = req.body) === null || _e === void 0 ? void 0 : _e.gender) || enum_1.Gender.MALE, dateOfBirth: ((_f = req.body) === null || _f === void 0 ? void 0 : _f.dataOfBirth) || '', encrypted_password: (0, auth_1.hashPassword)(password, process.env.SALT || ''), role: userType && userType === '2' ? 2 : 1 }, otherFields)
                     })
                         .then(function (user) {
+                        (0, logUser_1.loguser)(user.id, name, user.role || 1, 'User Signed Up', res);
                         return res.status(statusCode_1.statusCode.OK).json({
                             message: 'User Signed Up, Successfully!',
                             data: user
@@ -150,6 +152,7 @@ var signin = function (req, res) { return __awaiter(void 0, void 0, void 0, func
                             expires: new Date(Date.now() + 900000),
                             httpOnly: true
                         });
+                        (0, logUser_1.loguser)(user.id, user.name, user.role, 'User Logged in', res);
                         return res.status(statusCode_1.statusCode.OK).json({
                             message: 'User Logged in Successfully!',
                             token: token,
@@ -208,6 +211,7 @@ var update = function (req, res) { return __awaiter(void 0, void 0, void 0, func
                         data: reqBody
                     })
                         .then(function (user) {
+                        (0, logUser_1.loguser)(user.id, user.name, user.role, 'User Updated Successfully', res);
                         return res.status(statusCode_1.statusCode.OK).json({
                             message: 'User Updated Successfully',
                             data: user

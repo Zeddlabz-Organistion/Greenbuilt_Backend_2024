@@ -1,11 +1,11 @@
 export enum Gender {
 	MALE = 1,
-	FEMALE = 2,
+	FEMALE = 2
 }
 
 export enum BussinessType {
 	B2B = 'B2B',
-	B2C = 'B2C',
+	B2C = 'B2C'
 }
 
 export enum IndustryType {
@@ -14,5 +14,10 @@ export enum IndustryType {
 	KNITTING = 'KNITTING',
 	YARN_PROCESSING = 'YARN_PROCESSING',
 	FABRIC_PROCESSING = 'FABRIC_PROCESSING',
-	GARMENT_MANUFACTURING = 'GARMENT_MANUFACTURING',
+	GARMENT_MANUFACTURING = 'GARMENT_MANUFACTURING'
+}
+export enum UserType {
+	USER = 1,
+	CORPORATEUSER = 2,
+	ADMIN = 3
 }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IndustryType = exports.BussinessType = exports.Gender = void 0;
+exports.UserType = exports.IndustryType = exports.BussinessType = exports.Gender = void 0;
 var Gender;
 (function (Gender) {
     Gender[Gender["MALE"] = 1] = "MALE";
@@ -20,4 +20,10 @@ var IndustryType;
     IndustryType["FABRIC_PROCESSING"] = "FABRIC_PROCESSING";
     IndustryType["GARMENT_MANUFACTURING"] = "GARMENT_MANUFACTURING";
 })(IndustryType = exports.IndustryType || (exports.IndustryType = {}));
+var UserType;
+(function (UserType) {
+    UserType[UserType["USER"] = 1] = "USER";
+    UserType[UserType["CORPORATEUSER"] = 2] = "CORPORATEUSER";
+    UserType[UserType["ADMIN"] = 3] = "ADMIN";
+})(UserType = exports.UserType || (exports.UserType = {}));
 //# sourceMappingURL=enum.js.map

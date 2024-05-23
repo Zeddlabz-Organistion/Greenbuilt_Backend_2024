@@ -2,9 +2,6 @@
 	"name": "green-built-be",
 	"version": "1.0.0",
 	"description": "Green Built Backend",
-	"engines": {
-		"node": ">= 14.16 <15"
-	},
 	"main": "server.ts",
 	"author": "krish",
 	"license": "MIT",

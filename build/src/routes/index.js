@@ -14,6 +14,7 @@ var powerConsumption_1 = require("./powerConsumption");
 var monthlyPlan_1 = require("./monthlyPlan");
 var notification_1 = require("./notification");
 var plugin_1 = require("./plugin");
+var logUsersData_1 = require("./logUsersData");
 var routes = function (app) {
     app.use('/api', auth_1.authRoute);
     app.use('/api', statics_1.staticRoutes);
@@ -24,6 +25,7 @@ var routes = function (app) {
     app.use('/api', index_1.isSignedIn, index_1.isValidToken, qrCode_1.qrRoute);
     app.use('/api', index_1.isSignedIn, index_1.isValidToken, product_1.productRoute);
     app.use('/api', index_1.isSignedIn, index_1.isValidToken, asset_1.assetRoute);
+    app.use('/api', index_1.isSignedIn, index_1.isValidToken, logUsersData_1.logUsersRoute);
     app.use('/api', index_1.isSignedIn, index_1.isValidToken, powerConsumption_1.powerConsumptionRoute);
     app.use('/api', index_1.isSignedIn, index_1.isValidToken, monthlyPlan_1.monthlyPlanRoute);
     app.use('/api', index_1.isSignedIn, index_1.isValidToken, notification_1.notificationRoute);

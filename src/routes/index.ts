@@ -12,7 +12,7 @@ import { powerConsumptionRoute } from './powerConsumption'
 import { monthlyPlanRoute } from './monthlyPlan'
 import { notificationRoute } from './notification'
 import { plugInRoute } from './plugin'
-
+import { logUsersRoute } from './logUsersData'
 export const routes = (app: Application) => {
 	app.use('/api', authRoute)
 	app.use('/api', staticRoutes)
@@ -23,6 +23,7 @@ export const routes = (app: Application) => {
 	app.use('/api', isSignedIn, isValidToken, qrRoute)
 	app.use('/api', isSignedIn, isValidToken, productRoute)
 	app.use('/api', isSignedIn, isValidToken, assetRoute)
+	app.use('/api', isSignedIn, isValidToken, logUsersRoute)
 	app.use('/api', isSignedIn, isValidToken, powerConsumptionRoute)
 	app.use('/api', isSignedIn, isValidToken, monthlyPlanRoute)
 	app.use('/api', isSignedIn, isValidToken, notificationRoute)
