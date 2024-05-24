@@ -12,7 +12,7 @@ import {
 	getById,
 	updateById
 } from '../helpers/crud'
-// import { loguser } from '../helpers/logUser'
+import { loguser } from '../helpers/logUser'
 
 interface Product {
 	title: string
@@ -29,13 +29,19 @@ interface Product {
 
 export const createProduct = async (req: any, res: Response): Promise<any> => {
 	const userId = req.auth._id
+	// console.log("this is userid",userId);
 	const product: Product = req.body.product
+	// console.log("this is product",req.body);
 	const data = {
 		...product,
 		productId: uuid(),
 		userId
 	}
+	// console.log("this is data",data);
 	try {
+		const userData = await prisma.user.findUnique({
+			where: { id: userId }
+		})
 		await prisma.product
 			.findMany({
 				where: { userId: userId }
@@ -80,6 +86,13 @@ export const createProduct = async (req: any, res: Response): Promise<any> => {
 							}
 						})
 						.then(() => {
+							loguser(
+								userData?.id!,
+								userData?.name!,
+								userData?.role!,
+								`${product.title} has been created!`,
+								res
+							)
 							return res.status(SC.OK).json({
 								message: 'Product created successfully!',
 								data
@@ -109,9 +122,20 @@ export const bulkUpload = async (req: any, res: Response): Promise<any> => {
 	const userId = req.auth._id
 	const products: Product[] = req.body.products
 	const data = products?.map(val => ({ ...val, productId: uuid(), userId }))
+	const titlesWithQuotes = data.map(item => `'${item.title}'`).join(", ");
 	try {
+		const userData = await prisma.user.findUnique({
+			where: { id: userId }
+		})
 		await createMany(prisma.product, data)
 			.then(data => {
+				loguser(
+					userData?.id!,
+					userData?.name!,
+					userData?.role!,
+					`${titlesWithQuotes} Products updated in bulk successfully!`,
+					res
+				)
 				return res.status(SC.OK).json({
 					message: 'Products updated in bulk successfully!',
 					data
@@ -131,16 +155,29 @@ export const bulkUpload = async (req: any, res: Response): Promise<any> => {
 }
 
 export const deleteProduct = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const productId = req.params.productId
 	try {
+		const userData = await prisma.user.findUnique({
+			where: { id: userId }
+		})
+		// console.log("this is userdata",userData);
 		await getById(prisma.product, 'productId', productId)
 			.then(async product => {
 				if (!product.isApproved) {
+					// console.log("nikhilgupta",product);
 					await deleteById(prisma.product, 'productId', productId)
 						.then(data => {
+							loguser(
+								userData?.id!,
+								userData?.name!,
+								userData?.role!,
+								`${data.title} Product deleted successfully!`,
+								res
+							)
 							return res.status(SC.OK).json({
 								message: 'Product deleted successfully!',
 								data

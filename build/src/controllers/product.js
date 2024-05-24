@@ -54,8 +54,9 @@ var logger_1 = require("../utils/logger");
 var statusCode_1 = require("../utils/statusCode");
 var uuid_1 = require("uuid");
 var crud_1 = require("../helpers/crud");
+var logUser_1 = require("../helpers/logUser");
 var createProduct = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, product, data, err_1;
+    var userId, product, data, userData_1, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -64,7 +65,12 @@ var createProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                 data = __assign(__assign({}, product), { productId: (0, uuid_1.v4)(), userId: userId });
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 4, 5, 6]);
+                _a.trys.push([1, 5, 6, 7]);
+                return [4, index_1.prisma.user.findUnique({
+                        where: { id: userId }
+                    })];
+            case 2:
+                userData_1 = _a.sent();
                 return [4, index_1.prisma.product
                         .findMany({
                         where: { userId: userId }
@@ -83,7 +89,7 @@ var createProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                             return [2];
                         });
                     }); })];
-            case 2:
+            case 3:
                 _a.sent();
                 return [4, index_1.prisma.product
                         .count({
@@ -115,6 +121,7 @@ var createProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                                                             }
                                                         })
                                                             .then(function () {
+                                                            (0, logUser_1.loguser)(userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.id, userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.name, userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.role, product.title + " has been created!", res);
                                                             return res.status(statusCode_1.statusCode.OK).json({
                                                                 message: 'Product created successfully!',
                                                                 data: data
@@ -143,34 +150,41 @@ var createProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                             error: 'Product creation failed!'
                         });
                     })];
-            case 3:
-                _a.sent();
-                return [3, 6];
             case 4:
+                _a.sent();
+                return [3, 7];
+            case 5:
                 err_1 = _a.sent();
                 (0, logger_1.loggerUtil)(err_1, 'ERROR');
-                return [3, 6];
-            case 5:
+                return [3, 7];
+            case 6:
                 (0, logger_1.loggerUtil)("Create Product API Called!");
                 return [7];
-            case 6: return [2];
+            case 7: return [2];
         }
     });
 }); };
 exports.createProduct = createProduct;
 var bulkUpload = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, products, data, err_2;
+    var userId, products, data, titlesWithQuotes, userData_2, err_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 userId = req.auth._id;
                 products = req.body.products;
                 data = products === null || products === void 0 ? void 0 : products.map(function (val) { return (__assign(__assign({}, val), { productId: (0, uuid_1.v4)(), userId: userId })); });
+                titlesWithQuotes = data.map(function (item) { return "'" + item.title + "'"; }).join(", ");
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                _a.trys.push([1, 4, 5, 6]);
+                return [4, index_1.prisma.user.findUnique({
+                        where: { id: userId }
+                    })];
+            case 2:
+                userData_2 = _a.sent();
                 return [4, (0, crud_1.createMany)(index_1.prisma.product, data)
                         .then(function (data) {
+                        (0, logUser_1.loguser)(userData_2 === null || userData_2 === void 0 ? void 0 : userData_2.id, userData_2 === null || userData_2 === void 0 ? void 0 : userData_2.name, userData_2 === null || userData_2 === void 0 ? void 0 : userData_2.role, titlesWithQuotes + " Products updated in bulk successfully!", res);
                         return res.status(statusCode_1.statusCode.OK).json({
                             message: 'Products updated in bulk successfully!',
                             data: data
@@ -182,30 +196,36 @@ var bulkUpload = function (req, res) { return __awaiter(void 0, void 0, void 0, 
                             error: 'Products upload failed!'
                         });
                     })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_2 = _a.sent();
                 (0, logger_1.loggerUtil)(err_2, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Bulk upload Product API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
 exports.bulkUpload = bulkUpload;
 var deleteProduct = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var productId, err_3;
+    var userId, productId, userData_3, err_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 productId = req.params.productId;
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                _a.trys.push([1, 4, 5, 6]);
+                return [4, index_1.prisma.user.findUnique({
+                        where: { id: userId }
+                    })];
+            case 2:
+                userData_3 = _a.sent();
                 return [4, (0, crud_1.getById)(index_1.prisma.product, 'productId', productId)
                         .then(function (product) { return __awaiter(void 0, void 0, void 0, function () {
                         return __generator(this, function (_a) {
@@ -214,6 +234,7 @@ var deleteProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                                     if (!!product.isApproved) return [3, 2];
                                     return [4, (0, crud_1.deleteById)(index_1.prisma.product, 'productId', productId)
                                             .then(function (data) {
+                                            (0, logUser_1.loguser)(userData_3 === null || userData_3 === void 0 ? void 0 : userData_3.id, userData_3 === null || userData_3 === void 0 ? void 0 : userData_3.name, userData_3 === null || userData_3 === void 0 ? void 0 : userData_3.role, data.title + " Product deleted successfully!", res);
                                             return res.status(statusCode_1.statusCode.OK).json({
                                                 message: 'Product deleted successfully!',
                                                 data: data
@@ -245,17 +266,17 @@ var deleteProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                         .finally(function () {
                         return res.status(statusCode_1.statusCode.BAD_REQUEST).json({ error: 'Error' });
                     })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_3 = _a.sent();
                 (0, logger_1.loggerUtil)(err_3, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Delete Product API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
