@@ -1,13 +1,13 @@
-import { Request, Response } from 'express'
 import { prisma } from '../prisma/index'
-import { loggerUtil as logger, log } from '../utils/logger'
+import { Request, Response } from 'express'
 import { statusCode as SC } from '../utils/statusCode'
-
+import { loggerUtil as logger, log } from '../utils/logger'
 export const getUserById = async (
 	req: Request,
 	res: Response
 ): Promise<any> => {
 	const id = +(req.params.userId || '1')
+
 	try {
 		await prisma.user
 			.findFirst({
@@ -41,7 +41,7 @@ export const getUserById = async (
 
 export const getAllUsers = async (_: any, res: Response): Promise<any> => {
 	try {
-		console.log("nikhil");
+		console.log('nikhil')
 		await prisma.user
 			.findMany()
 			.then(user => {
