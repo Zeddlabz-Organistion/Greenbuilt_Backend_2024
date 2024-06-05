@@ -8,11 +8,7 @@ import { v4 as uuid } from 'uuid'
 import { deleteById, getById, getAllById } from '../helpers/crud'
 import { forIn, isEmpty } from 'lodash'
 import { loguser } from '../helpers/logUser'
-interface User {
-	id: number
-	name: string
-	role: number
-}
+
 export const createMonthlyConsumptionPlan = async (
 	req: any,
 	res: Response
@@ -55,7 +51,7 @@ export const createMonthlyConsumptionPlan = async (
 				if (!val.length) {
 					await createMany(prisma.montlyConsumptionPlan, finalData)
 						.then(async count => {
-							const userData = await getById(prisma.user, 'id', count.userId)
+							const userData = await getById(prisma.user, 'id', userId)
 
 							loguser(
 								userData?.id!,
@@ -92,9 +88,10 @@ export const createMonthlyConsumptionPlan = async (
 }
 
 export const updateMonthlyConsumptionPlan = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const info: any = req.body.info
 	const monthlyPlanData: any[] = req.body.data
 	try {
@@ -121,8 +118,8 @@ export const updateMonthlyConsumptionPlan = async (
 							(val.thirdPartyPurchase || 0)
 					}
 				})
-				.then(async data => {
-					const userData = await getById(prisma.user, 'id', data.userId)
+				.then(async () => {
+					const userData = await getById(prisma.user, 'id', userId)
 
 					loguser(
 						userData?.id!,
@@ -170,11 +167,11 @@ export const updateMonthlyConsumptionPlan = async (
 }
 
 export const approveMonthlyConsumptionPlan = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const monthlyPlanId = req.params.monthlyPlanId
-
 	try {
 		const monthlyPlans = await prisma.montlyConsumptionPlan.findMany({
 			where: { monthlyPlanId }
@@ -191,21 +188,21 @@ export const approveMonthlyConsumptionPlan = async (
 			total += plan.total || 0
 		})
 
-		const user = await prisma.user.findFirst({
-			where: { id: monthlyPlans[0]?.userId }
+		const userData = await prisma.user.findFirst({
+			where: { id: userId }
 		})
 
-		if (!user) {
+		if (!userData) {
 			return res.status(SC.NOT_FOUND).json({
 				message: 'User not found!'
 			})
 		}
 
-		const updatedUser = await prisma.user.update({
+		await prisma.user.update({
 			where: { id: monthlyPlans[0]?.userId },
 			data: {
-				points: (user.points || 0) + total,
-				totalPoints: (user.totalPoints || 0) + total
+				points: (userData.points || 0) + total,
+				totalPoints: (userData.totalPoints || 0) + total
 			}
 		})
 
@@ -214,16 +211,10 @@ export const approveMonthlyConsumptionPlan = async (
 			data: { isApproved: true }
 		})
 
-		const userData: User = {
-			id: updatedUser.id!,
-			name: updatedUser.name!,
-			role: updatedUser.role!
-		}
-
 		loguser(
 			userData.id,
 			userData.name,
-			userData.role,
+			userData.role!,
 			`Monthly consumption plan approved with total points: ${total}`,
 			res
 		)
@@ -243,9 +234,10 @@ export const approveMonthlyConsumptionPlan = async (
 }
 
 export const deleteByMonthlyConsumptionPlanId = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const monthlyPlanId = req.params.monthlyPlanId
 	try {
 		const monthlyPlans = await prisma.montlyConsumptionPlan.findMany({
@@ -257,13 +249,7 @@ export const deleteByMonthlyConsumptionPlanId = async (
 				message: 'Monthly consumption plan not found!'
 			})
 		}
-		const userData = await getById(prisma.user, 'id', monthlyPlans[0]?.userId)
-
-		if (!userData) {
-			return res.status(SC.NOT_FOUND).json({
-				message: 'User not found!'
-			})
-		}
+		const userData = await getById(prisma.user, 'id', userId)
 
 		const deleteResult = await prisma.montlyConsumptionPlan.deleteMany({
 			where: { monthlyPlanId }
@@ -292,14 +278,15 @@ export const deleteByMonthlyConsumptionPlanId = async (
 }
 
 export const deleteMonthlyConsumptionById = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.user._id
 	const id = +(req.params.monthlyPlanId || '0')
 	try {
 		await deleteById(prisma.montlyConsumptionPlan, 'id', id)
 			.then(async data => {
-				const userData = await getById(prisma.user, 'id', data.userId)
+				const userData = await getById(prisma.user, 'id', userId)
 
 				loguser(
 					userData?.id!,

@@ -114,7 +114,7 @@ var createMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0
                                             var userData;
                                             return __generator(this, function (_a) {
                                                 switch (_a.label) {
-                                                    case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', count.userId)];
+                                                    case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
                                                     case 1:
                                                         userData = _a.sent();
                                                         (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Monthly consumption plan created sucessfully!', res);
@@ -161,8 +161,9 @@ var createMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0
 }); };
 exports.createMonthlyConsumptionPlan = createMonthlyConsumptionPlan;
 var updateMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var info, monthlyPlanData;
+    var userId, info, monthlyPlanData;
     return __generator(this, function (_a) {
+        userId = req.auth._id;
         info = req.body.info;
         monthlyPlanData = req.body.data;
         try {
@@ -188,11 +189,11 @@ var updateMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0
                             (val.thirdPartyPurchase || 0)
                     }
                 })
-                    .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                    .then(function () { return __awaiter(void 0, void 0, void 0, function () {
                     var userData;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
-                            case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', data.userId)];
+                            case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
                             case 1:
                                 userData = _a.sent();
                                 (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Monthly Consumption Plan updated successfully.", res);
@@ -222,20 +223,21 @@ var updateMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0
 }); };
 exports.updateMonthlyConsumptionPlan = updateMonthlyConsumptionPlan;
 var approveMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var monthlyPlanId, monthlyPlans, total_1, user, updatedUser, updatedPlans, userData, err_2;
-    var _a, _b;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var userId, monthlyPlanId, monthlyPlans, total_1, userData, updatedPlans, err_2;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
+                userId = req.auth._id;
                 monthlyPlanId = req.params.monthlyPlanId;
-                _c.label = 1;
+                _b.label = 1;
             case 1:
-                _c.trys.push([1, 6, 7, 8]);
+                _b.trys.push([1, 6, 7, 8]);
                 return [4, index_1.prisma.montlyConsumptionPlan.findMany({
                         where: { monthlyPlanId: monthlyPlanId }
                     })];
             case 2:
-                monthlyPlans = _c.sent();
+                monthlyPlans = _b.sent();
                 if (!monthlyPlans.length) {
                     return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
                             message: 'Monthly consumption plan not found!'
@@ -246,35 +248,30 @@ var approveMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 
                     total_1 += plan.total || 0;
                 });
                 return [4, index_1.prisma.user.findFirst({
-                        where: { id: (_a = monthlyPlans[0]) === null || _a === void 0 ? void 0 : _a.userId }
+                        where: { id: userId }
                     })];
             case 3:
-                user = _c.sent();
-                if (!user) {
+                userData = _b.sent();
+                if (!userData) {
                     return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
                             message: 'User not found!'
                         })];
                 }
                 return [4, index_1.prisma.user.update({
-                        where: { id: (_b = monthlyPlans[0]) === null || _b === void 0 ? void 0 : _b.userId },
+                        where: { id: (_a = monthlyPlans[0]) === null || _a === void 0 ? void 0 : _a.userId },
                         data: {
-                            points: (user.points || 0) + total_1,
-                            totalPoints: (user.totalPoints || 0) + total_1
+                            points: (userData.points || 0) + total_1,
+                            totalPoints: (userData.totalPoints || 0) + total_1
                         }
                     })];
             case 4:
-                updatedUser = _c.sent();
+                _b.sent();
                 return [4, index_1.prisma.montlyConsumptionPlan.updateMany({
                         where: { monthlyPlanId: monthlyPlanId },
                         data: { isApproved: true }
                     })];
             case 5:
-                updatedPlans = _c.sent();
-                userData = {
-                    id: updatedUser.id,
-                    name: updatedUser.name,
-                    role: updatedUser.role
-                };
+                updatedPlans = _b.sent();
                 (0, logUser_1.loguser)(userData.id, userData.name, userData.role, "Monthly consumption plan approved with total points: " + total_1, res);
                 res.status(statusCode_1.statusCode.OK).json({
                     message: 'Monthly consumption plan has been approved successfully!',
@@ -282,7 +279,7 @@ var approveMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 
                 });
                 return [3, 8];
             case 6:
-                err_2 = _c.sent();
+                err_2 = _b.sent();
                 (0, logger_1.loggerUtil)(err_2, 'ERROR');
                 res.status(statusCode_1.statusCode.INTERNAL_SERVER_ERROR).json({
                     error: 'Failed to approve monthly consumption plan!'
@@ -297,38 +294,33 @@ var approveMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 
 }); };
 exports.approveMonthlyConsumptionPlan = approveMonthlyConsumptionPlan;
 var deleteByMonthlyConsumptionPlanId = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var monthlyPlanId, monthlyPlans, userData, deleteResult, err_3;
-    var _a;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+    var userId, monthlyPlanId, monthlyPlans, userData, deleteResult, err_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 monthlyPlanId = req.params.monthlyPlanId;
-                _b.label = 1;
+                _a.label = 1;
             case 1:
-                _b.trys.push([1, 5, 6, 7]);
+                _a.trys.push([1, 5, 6, 7]);
                 return [4, index_1.prisma.montlyConsumptionPlan.findMany({
                         where: { monthlyPlanId: monthlyPlanId }
                     })];
             case 2:
-                monthlyPlans = _b.sent();
+                monthlyPlans = _a.sent();
                 if (!monthlyPlans.length) {
                     return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
                             message: 'Monthly consumption plan not found!'
                         })];
                 }
-                return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', (_a = monthlyPlans[0]) === null || _a === void 0 ? void 0 : _a.userId)];
+                return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
             case 3:
-                userData = _b.sent();
-                if (!userData) {
-                    return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
-                            message: 'User not found!'
-                        })];
-                }
+                userData = _a.sent();
                 return [4, index_1.prisma.montlyConsumptionPlan.deleteMany({
                         where: { monthlyPlanId: monthlyPlanId }
                     })];
             case 4:
-                deleteResult = _b.sent();
+                deleteResult = _a.sent();
                 (0, logUser_1.loguser)(userData.id, userData.name, userData.role, "Monthly consumption plan deleted successfully!", res);
                 res.status(statusCode_1.statusCode.OK).json({
                     message: 'Monthly consumption plan deleted successfully!',
@@ -336,7 +328,7 @@ var deleteByMonthlyConsumptionPlanId = function (req, res) { return __awaiter(vo
                 });
                 return [3, 7];
             case 5:
-                err_3 = _b.sent();
+                err_3 = _a.sent();
                 (0, logger_1.loggerUtil)(err_3, 'ERROR');
                 res.status(statusCode_1.statusCode.INTERNAL_SERVER_ERROR).json({
                     error: 'Error while deleting monthly consumption plan'
@@ -351,10 +343,11 @@ var deleteByMonthlyConsumptionPlanId = function (req, res) { return __awaiter(vo
 }); };
 exports.deleteByMonthlyConsumptionPlanId = deleteByMonthlyConsumptionPlanId;
 var deleteMonthlyConsumptionById = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, err_4;
+    var userId, id, err_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.user._id;
                 id = +(req.params.monthlyPlanId || '0');
                 _a.label = 1;
             case 1:
@@ -364,7 +357,7 @@ var deleteMonthlyConsumptionById = function (req, res) { return __awaiter(void 0
                         var userData;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', data.userId)];
+                                case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
                                 case 1:
                                     userData = _a.sent();
                                     (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Monthly consumption plan deleted sucessfully!", res);

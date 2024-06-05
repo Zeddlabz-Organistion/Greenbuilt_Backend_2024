@@ -34,10 +34,7 @@ interface Asset {
 	userId: number
 }
 
-export const createAsset = async (
-	req: Request,
-	res: Response
-): Promise<any> => {
+export const createAsset = async (req: any, res: Response): Promise<any> => {
 	const userId = +(req.params.userId || '0')
 	const asset: Asset = req.body.asset
 	const data = {
@@ -45,7 +42,7 @@ export const createAsset = async (
 		assetId: uuid(),
 		userId
 	}
-	const userData = await getById(prisma.user, 'id', userId)
+	const userData = await getById(prisma.user, 'id', req.auth._id)
 	try {
 		await create(prisma.asset, data)
 			.then(data => {
@@ -53,7 +50,7 @@ export const createAsset = async (
 					userData?.id!,
 					userData?.name!,
 					userData?.role!,
-					`Asset created successfully!`,
+					`Asset created successfully! for this user id ${userId}`,
 					res
 				)
 				return res.status(SC.OK).json({
@@ -74,9 +71,9 @@ export const createAsset = async (
 	}
 }
 
-export const bulkUpload = async (req: Request, res: Response): Promise<any> => {
+export const bulkUpload = async (req: any, res: Response): Promise<any> => {
 	const userId = +(req.params.userId || '0')
-	const userData = await getById(prisma.user, 'id', userId)
+	const userData = await getById(prisma.user, 'id', req.auth._id)
 	const assets: Asset[] = req.body.assets
 	const data = assets?.map(val => ({ ...val, assetId: uuid(), userId }))
 	try {
@@ -86,7 +83,7 @@ export const bulkUpload = async (req: Request, res: Response): Promise<any> => {
 					userData?.id!,
 					userData?.name!,
 					userData?.role!,
-					`Assets upload in bulk successfully by admin`,
+					`Assets upload in bulk successfully for this user id ${userId}`,
 					res
 				)
 
@@ -108,21 +105,18 @@ export const bulkUpload = async (req: Request, res: Response): Promise<any> => {
 	}
 }
 
-export const updateAsset = async (
-	req: Request,
-	res: Response
-): Promise<any> => {
+export const updateAsset = async (req: any, res: Response): Promise<any> => {
 	const assetId = req.params.assetId
 	const asset: Asset = req.body.asset
 	try {
 		const data = await updateById(prisma.asset, asset, 'assetId', assetId)
-		const userData = await getById(prisma.user, 'id', data.userId)
+		const userData = await getById(prisma.user, 'id', req.auth._id)
 
 		loguser(
 			userData?.id!,
 			userData?.name!,
 			userData?.role!,
-			`Asset updated successfully by admin`,
+			`Asset updated successfully! Asset id is ${assetId}`,
 			res
 		)
 
@@ -140,21 +134,18 @@ export const updateAsset = async (
 	}
 }
 
-export const deleteAsset = async (
-	req: Request,
-	res: Response
-): Promise<any> => {
+export const deleteAsset = async (req: any, res: Response): Promise<any> => {
 	const assetId = req.params.assetId
 	try {
-		const data = await deleteById(prisma.asset, 'assetId', assetId)
+		await deleteById(prisma.asset, 'assetId', assetId)
 
-		const userData = await getById(prisma.user, 'id', data.userId)
+		const userData = await getById(prisma.user, 'id', req.auth._id)
 
 		loguser(
 			userData?.id!,
 			userData?.name!,
 			userData?.role!,
-			`Asset deleted successfully by admin`,
+			`Asset deleted successfully! and assetId is ${assetId}`,
 			res
 		)
 

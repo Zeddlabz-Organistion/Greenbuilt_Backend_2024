@@ -66,7 +66,6 @@ export const isCorporate = async (
 
 export const isAdmin = async (req: any, res: Response, next: NextFunction) => {
 	const authId = req.auth._id
-
 	if (authId) {
 		await prisma.user
 			.findFirst({

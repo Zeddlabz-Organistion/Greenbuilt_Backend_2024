@@ -17,7 +17,7 @@ var plugin_1 = require("./plugin");
 var logUsersData_1 = require("./logUsersData");
 var routes = function (app) {
     app.use('/api', auth_1.authRoute);
-    app.use('/api', statics_1.staticRoutes);
+    app.use('/api', index_1.isSignedIn, index_1.isValidToken, statics_1.staticRoutes);
     app.use('/api', plugin_1.plugInRoute);
     app.use('/api', index_1.isSignedIn, index_1.isValidToken, document_1.documentRoute);
     app.use('/api', index_1.isSignedIn, index_1.isValidToken, user_1.userRoute);

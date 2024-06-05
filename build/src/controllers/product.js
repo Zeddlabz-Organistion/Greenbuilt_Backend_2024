@@ -397,10 +397,11 @@ var getAllProducts = function (req, res) { return __awaiter(void 0, void 0, void
 }); };
 exports.getAllProducts = getAllProducts;
 var approveProduct = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var productId, data, err_7;
+    var userId, productId, data, err_7;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 productId = req.params.productId;
                 data = {
                     isApproved: true
@@ -412,10 +413,9 @@ var approveProduct = function (req, res) { return __awaiter(void 0, void 0, void
                         var userData;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
                                 case 1:
                                     userData = _a.sent();
-                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Product - " + data.title + " has been approved by admin", res);
                                     return [4, index_1.prisma.notification
                                             .create({
                                             data: {
@@ -429,6 +429,7 @@ var approveProduct = function (req, res) { return __awaiter(void 0, void 0, void
                                             }
                                         })
                                             .then(function () {
+                                            (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Product - " + data.title + " id - " + productId + " has been approved successfully!", res);
                                             return res.status(statusCode_1.statusCode.OK).json({
                                                 message: 'Product approved successfully!',
                                                 data: data
@@ -462,17 +463,21 @@ var approveProduct = function (req, res) { return __awaiter(void 0, void 0, void
 }); };
 exports.approveProduct = approveProduct;
 var updateProductPoints = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, points, err_8;
+    var userId, userData, id, points, err_8;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+            case 1:
+                userData = _a.sent();
                 id = +(req.params.productId || 0);
                 points = typeof req.body.points === 'string'
                     ? +(req.body.points || 0)
                     : req.body.points || 0;
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                _a.label = 2;
+            case 2:
+                _a.trys.push([2, 4, 5, 6]);
                 return [4, (0, crud_1.getById)(index_1.prisma.product, 'id', id)
                         .then(function (product) { return __awaiter(void 0, void 0, void 0, function () {
                         var data;
@@ -484,18 +489,12 @@ var updateProductPoints = function (req, res) { return __awaiter(void 0, void 0,
                                     };
                                     return [4, (0, crud_1.updateById)(index_1.prisma.product, data, 'productId', product === null || product === void 0 ? void 0 : product.productId)
                                             .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
-                                            var userData;
                                             return __generator(this, function (_a) {
-                                                switch (_a.label) {
-                                                    case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
-                                                    case 1:
-                                                        userData = _a.sent();
-                                                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Product points updated successfully by admin", res);
-                                                        return [2, res.status(statusCode_1.statusCode.OK).json({
-                                                                message: 'Product updated successfully!',
-                                                                data: data
-                                                            })];
-                                                }
+                                                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Product points updated successfully by admin", res);
+                                                return [2, res.status(statusCode_1.statusCode.OK).json({
+                                                        message: 'Product updated successfully!',
+                                                        data: data
+                                                    })];
                                             });
                                         }); })
                                             .catch(function (err) {
@@ -516,17 +515,17 @@ var updateProductPoints = function (req, res) { return __awaiter(void 0, void 0,
                             error: 'NO product found!'
                         });
                     })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_8 = _a.sent();
                 (0, logger_1.loggerUtil)(err_8, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Approve Product API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };

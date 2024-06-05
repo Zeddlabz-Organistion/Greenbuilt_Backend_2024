@@ -288,10 +288,8 @@ export const getAllProducts = async (
 	}
 }
 
-export const approveProduct = async (
-	req: Request,
-	res: Response
-): Promise<any> => {
+export const approveProduct = async (req: any, res: Response): Promise<any> => {
+	const userId = req.auth._id
 	const productId = req.params.productId
 	const data = {
 		isApproved: true
@@ -299,14 +297,7 @@ export const approveProduct = async (
 	try {
 		await updateById(prisma.product, data, 'productId', productId).then(
 			async data => {
-				const userData = await getById(prisma.user, 'id', data.userId)
-				loguser(
-					userData?.id!,
-					userData?.name!,
-					userData?.role!,
-					`Product - ${data.title} has been approved by admin`,
-					res
-				)
+				const userData = await getById(prisma.user, 'id', userId)
 				await prisma.notification
 					.create({
 						data: {
@@ -320,6 +311,13 @@ export const approveProduct = async (
 						}
 					})
 					.then(() => {
+						loguser(
+							userData?.id!,
+							userData?.name!,
+							userData?.role!,
+							`Product - ${data.title} id - ${productId} has been approved successfully!`,
+							res
+						)
 						return res.status(SC.OK).json({
 							message: 'Product approved successfully!',
 							data
@@ -341,9 +339,11 @@ export const approveProduct = async (
 }
 
 export const updateProductPoints = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
+	const userData = await getById(prisma.user, 'id', userId)
 	const id = +(req.params.productId || 0)
 	const points =
 		typeof req.body.points === 'string'
@@ -358,7 +358,6 @@ export const updateProductPoints = async (
 				}
 				await updateById(prisma.product, data, 'productId', product?.productId)
 					.then(async data => {
-						const userData = await getById(prisma.user, 'id', data.userId)
 						loguser(
 							userData?.id!,
 							userData?.name!,

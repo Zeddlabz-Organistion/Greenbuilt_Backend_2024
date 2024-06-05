@@ -42,22 +42,34 @@ var index_1 = require("../prisma/index");
 var logger_1 = require("../utils/logger");
 var statusCode_1 = require("../utils/statusCode");
 var uuid_1 = require("uuid");
+var logUser_1 = require("../helpers/logUser");
 var createIndustryType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var data;
+    var userId, data;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 data = {
                     industryTypeId: (0, uuid_1.v4)(),
                     name: req.body.name
                 };
                 return [4, (0, crud_1.create)(index_1.prisma.industryType, data)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Industry type successfully created!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Industry type successfully created!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Industry type successfully created!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -72,10 +84,11 @@ var createIndustryType = function (req, res) { return __awaiter(void 0, void 0, 
 }); };
 exports.createIndustryType = createIndustryType;
 var updateIndustryType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, industryTypeId;
+    var userId, data, industryTypeId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 data = req.body;
                 industryTypeId = req.params.industryTypeId;
                 if (!industryTypeId) {
@@ -85,12 +98,22 @@ var updateIndustryType = function (req, res) { return __awaiter(void 0, void 0, 
                     return [2];
                 }
                 return [4, (0, crud_1.updateById)(index_1.prisma.industryType, data, 'industryTypeId', industryTypeId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Industry type updated successfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Industry type updated successfully!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Industry type updated successfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -105,10 +128,11 @@ var updateIndustryType = function (req, res) { return __awaiter(void 0, void 0, 
 }); };
 exports.updateIndustryType = updateIndustryType;
 var deleteIndustryType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var industryTypeId;
+    var userId, industryTypeId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 industryTypeId = req.params.industryTypeId;
                 if (!industryTypeId) {
                     res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -117,12 +141,22 @@ var deleteIndustryType = function (req, res) { return __awaiter(void 0, void 0, 
                     return [2];
                 }
                 return [4, (0, crud_1.deleteById)(index_1.prisma.industryType, 'industryTypeId', industryTypeId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Industry type deleted successfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Industry type deleted successfully!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Industry type deleted successfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -215,21 +249,32 @@ var getAllIndustryTypes = function (req, res) { return __awaiter(void 0, void 0,
 }); };
 exports.getAllIndustryTypes = getAllIndustryTypes;
 var createSourceType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var data;
+    var userId, data;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 data = {
                     sourceTypeId: (0, uuid_1.v4)(),
                     name: req.body.name
                 };
                 return [4, (0, crud_1.create)(index_1.prisma.sourceType, data)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Source type successfully created!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Source type successfully created!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Source type successfully created!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -244,10 +289,11 @@ var createSourceType = function (req, res) { return __awaiter(void 0, void 0, vo
 }); };
 exports.createSourceType = createSourceType;
 var updateSourceType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, sourceTypeId;
+    var userId, data, sourceTypeId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 data = req.body;
                 sourceTypeId = req.params.sourceTypeId;
                 if (!sourceTypeId) {
@@ -257,12 +303,22 @@ var updateSourceType = function (req, res) { return __awaiter(void 0, void 0, vo
                     return [2];
                 }
                 return [4, (0, crud_1.updateById)(index_1.prisma.sourceType, data, 'sourceTypeId', sourceTypeId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Source type updated successfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Source type updated successfully!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Source type updated successfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -277,10 +333,11 @@ var updateSourceType = function (req, res) { return __awaiter(void 0, void 0, vo
 }); };
 exports.updateSourceType = updateSourceType;
 var deleteSourceType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var sourceTypeId;
+    var userId, sourceTypeId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 sourceTypeId = req.params.sourceTypeId;
                 if (!sourceTypeId) {
                     res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -289,12 +346,22 @@ var deleteSourceType = function (req, res) { return __awaiter(void 0, void 0, vo
                     return [2];
                 }
                 return [4, (0, crud_1.deleteById)(index_1.prisma.sourceType, 'sourceTypeId', sourceTypeId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Source type deleted successfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Source type deleted successfully!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Source type deleted successfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -387,21 +454,32 @@ var getAllSourceTypes = function (req, res) { return __awaiter(void 0, void 0, v
 }); };
 exports.getAllSourceTypes = getAllSourceTypes;
 var createUOM = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var data;
+    var userId, data;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 data = {
                     uomId: (0, uuid_1.v4)(),
                     name: req.body.name
                 };
                 return [4, (0, crud_1.create)(index_1.prisma.uOM, data)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'UOM successfully created!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'UOM successfully created!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'UOM successfully created!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -416,10 +494,11 @@ var createUOM = function (req, res) { return __awaiter(void 0, void 0, void 0, f
 }); };
 exports.createUOM = createUOM;
 var updateUOM = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, uomId;
+    var userId, data, uomId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 data = req.body;
                 uomId = req.params.uomId;
                 if (!uomId) {
@@ -429,12 +508,22 @@ var updateUOM = function (req, res) { return __awaiter(void 0, void 0, void 0, f
                     return [2];
                 }
                 return [4, (0, crud_1.updateById)(index_1.prisma.uOM, data, 'uomId', uomId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'UOM updated successfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'UOM updated successfully!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'UOM updated successfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -449,10 +538,11 @@ var updateUOM = function (req, res) { return __awaiter(void 0, void 0, void 0, f
 }); };
 exports.updateUOM = updateUOM;
 var deleteUOM = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var uomId;
+    var userId, uomId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 uomId = req.params.uomId;
                 if (!uomId) {
                     res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -461,12 +551,22 @@ var deleteUOM = function (req, res) { return __awaiter(void 0, void 0, void 0, f
                     return [2];
                 }
                 return [4, (0, crud_1.deleteById)(index_1.prisma.uOM, 'uomId', uomId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'UOM deleted successfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'UOM deleted successfully!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'UOM deleted successfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -559,21 +659,32 @@ var getAllUOMs = function (req, res) { return __awaiter(void 0, void 0, void 0, 
 }); };
 exports.getAllUOMs = getAllUOMs;
 var createPackagingType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var data;
+    var userId, data;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 data = {
                     packagingTypeId: (0, uuid_1.v4)(),
                     name: req.body.name
                 };
                 return [4, (0, crud_1.create)(index_1.prisma.packagingType, data)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Packaging type successfully created!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Packaging type successfully created!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Packaging type successfully created!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -588,10 +699,11 @@ var createPackagingType = function (req, res) { return __awaiter(void 0, void 0,
 }); };
 exports.createPackagingType = createPackagingType;
 var updatePackagingType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, packagingTypeId;
+    var userId, data, packagingTypeId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 data = req.body;
                 packagingTypeId = req.params.packagingTypeId;
                 if (!packagingTypeId) {
@@ -601,12 +713,22 @@ var updatePackagingType = function (req, res) { return __awaiter(void 0, void 0,
                     return [2];
                 }
                 return [4, (0, crud_1.updateById)(index_1.prisma.packagingType, data, 'packagingTypeId', packagingTypeId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Packaging type updated successfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Packaging type updated successfully!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Packaging type updated successfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -621,10 +743,11 @@ var updatePackagingType = function (req, res) { return __awaiter(void 0, void 0,
 }); };
 exports.updatePackagingType = updatePackagingType;
 var deletePackagingType = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var packagingTypeId;
+    var userId, packagingTypeId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 packagingTypeId = req.params.packagingTypeId;
                 if (!packagingTypeId) {
                     res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -633,12 +756,22 @@ var deletePackagingType = function (req, res) { return __awaiter(void 0, void 0,
                     return [2];
                 }
                 return [4, (0, crud_1.deleteById)(index_1.prisma.packagingType, 'packagingTypeId', packagingTypeId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Packaging type deleted successfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Packaging type deleted successfully!', res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Packaging type deleted successfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({

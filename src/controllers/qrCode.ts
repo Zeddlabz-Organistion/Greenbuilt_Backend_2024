@@ -5,6 +5,7 @@ import { statusCode as SC } from '../utils/statusCode'
 import { loguser } from '../helpers/logUser'
 import { v4 as uuid } from 'uuid'
 import { getById } from '../helpers/crud'
+
 export const generateQRCode = async (req: any, res: Response): Promise<any> => {
 	const userId = req.auth._id
 	const productId = req.params.productId

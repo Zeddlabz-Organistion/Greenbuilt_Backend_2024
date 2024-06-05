@@ -223,11 +223,12 @@ var createEnergyConsumption = function (req, res) { return __awaiter(void 0, voi
 }); };
 exports.createEnergyConsumption = createEnergyConsumption;
 var updateEnergyConsumption = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var powerConsumptionId, form, err_2;
+    var powerConsumptionId, userId, form, err_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 powerConsumptionId = +(req.params.powerConsumptionId || '0');
+                userId = req.auth._id;
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, 4, 5]);
@@ -266,10 +267,10 @@ var updateEnergyConsumption = function (req, res) { return __awaiter(void 0, voi
                                                                     var userData;
                                                                     return __generator(this, function (_a) {
                                                                         switch (_a.label) {
-                                                                            case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', data.userId)];
+                                                                            case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
                                                                             case 1:
                                                                                 userData = _a.sent();
-                                                                                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Power consumption data updated sucessfully!", res);
+                                                                                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Power consumption data updated sucessfully. and power consumption id is " + powerConsumptionId, res);
                                                                                 return [2, res.status(statusCode_1.statusCode.OK).json({
                                                                                         message: 'Power consumption data updated sucessfully!',
                                                                                         data: data
@@ -339,14 +340,18 @@ var updateEnergyConsumption = function (req, res) { return __awaiter(void 0, voi
 }); };
 exports.updateEnergyConsumption = updateEnergyConsumption;
 var approvePowerConsumption = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, err_3;
+    var id, userId, userData, err_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 id = +(req.params.powerConsumptionId || '0');
-                _a.label = 1;
+                userId = req.auth._id;
+                return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                userData = _a.sent();
+                _a.label = 2;
+            case 2:
+                _a.trys.push([2, 4, 5, 6]);
                 return [4, index_1.prisma.powerConsumption
                         .update({
                         where: {
@@ -378,9 +383,9 @@ var approvePowerConsumption = function (req, res) { return __awaiter(void 0, voi
                                                                 id: data === null || data === void 0 ? void 0 : data.userId
                                                             }
                                                         })
-                                                            .then(function (userData) { return __awaiter(void 0, void 0, void 0, function () {
+                                                            .then(function (user) { return __awaiter(void 0, void 0, void 0, function () {
                                                             return __generator(this, function (_a) {
-                                                                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Power consumption  has been approved sucessfully!", res);
+                                                                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Power consumption  has been approved sucessfully. and user name is " + (user === null || user === void 0 ? void 0 : user.name) + ", id is " + (user === null || user === void 0 ? void 0 : user.id), res);
                                                                 res.status(statusCode_1.statusCode.OK).json({
                                                                     message: 'Power consumption  has been approved sucessfully!'
                                                                 });
@@ -411,43 +416,42 @@ var approvePowerConsumption = function (req, res) { return __awaiter(void 0, voi
                             }
                         });
                     }); })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_3 = _a.sent();
                 (0, logger_1.loggerUtil)(err_3, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Approve Power Consumption with Source API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
 exports.approvePowerConsumption = approvePowerConsumption;
 var deletePowerConsumption = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var powerConsumptionId, err_4;
+    var powerConsumptionId, userId, userData_1, err_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 powerConsumptionId = +(req.params.powerConsumptionId || '0');
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                _a.trys.push([1, 4, 5, 6]);
+                userId = req.auth._id;
+                return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
+            case 2:
+                userData_1 = _a.sent();
                 return [4, (0, crud_2.deleteById)(index_1.prisma.powerConsumption, 'id', powerConsumptionId)
                         .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
-                        var userData;
                         return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', data.userId)];
-                                case 1:
-                                    userData = _a.sent();
-                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Power consumption data deleted sucessfully!', res);
-                                    return [2, res.status(statusCode_1.statusCode.OK).json({
-                                            message: 'Power consumption data deleted sucessfully!'
-                                        })];
-                            }
+                            console.log(data);
+                            (0, logUser_1.loguser)(userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.id, userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.name, userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.role, 'Power consumption data deleted sucessfully!', res);
+                            return [2, res.status(statusCode_1.statusCode.OK).json({
+                                    message: 'Power consumption data deleted sucessfully!'
+                                })];
                         });
                     }); })
                         .catch(function (err) {
@@ -456,17 +460,17 @@ var deletePowerConsumption = function (req, res) { return __awaiter(void 0, void
                             error: 'Error while deleting Power consumption data'
                         });
                     })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_4 = _a.sent();
                 (0, logger_1.loggerUtil)(err_4, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Delete Power consumption API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };

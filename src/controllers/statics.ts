@@ -10,25 +10,35 @@ import { prisma } from '../prisma/index'
 import { loggerUtil as logger } from '../utils/logger'
 import { statusCode as SC } from '../utils/statusCode'
 import { v4 as uuid } from 'uuid'
-
+import { loguser } from '../helpers/logUser'
 /**
  * industry type goes here
  */
 export const createIndustryType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const data = {
 		industryTypeId: uuid(),
 		name: req.body.name
 	}
 	await create(prisma.industryType, data)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Industry type successfully created!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Industry type successfully created!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -38,9 +48,10 @@ export const createIndustryType = async (
 }
 
 export const updateIndustryType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const data = req.body
 	const industryTypeId = req.params.industryTypeId
 	if (!industryTypeId) {
@@ -50,12 +61,21 @@ export const updateIndustryType = async (
 		return
 	}
 	await updateById(prisma.industryType, data, 'industryTypeId', industryTypeId)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Industry type updated successfully!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Industry type updated successfully!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -65,9 +85,10 @@ export const updateIndustryType = async (
 }
 
 export const deleteIndustryType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const industryTypeId = req.params.industryTypeId
 	if (!industryTypeId) {
 		res.status(SC.BAD_REQUEST).json({
@@ -76,12 +97,21 @@ export const deleteIndustryType = async (
 		return
 	}
 	await deleteById(prisma.industryType, 'industryTypeId', industryTypeId)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Industry type deleted successfully!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Industry type deleted successfully!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -151,20 +181,30 @@ export const getAllIndustryTypes = async (
  * source type goes here
  */
 export const createSourceType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const data = {
 		sourceTypeId: uuid(),
 		name: req.body.name
 	}
 	await create(prisma.sourceType, data)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Source type successfully created!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Source type successfully created!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -174,9 +214,10 @@ export const createSourceType = async (
 }
 
 export const updateSourceType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const data = req.body
 	const sourceTypeId = req.params.sourceTypeId
 	if (!sourceTypeId) {
@@ -186,12 +227,21 @@ export const updateSourceType = async (
 		return
 	}
 	await updateById(prisma.sourceType, data, 'sourceTypeId', sourceTypeId)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Source type updated successfully!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Source type updated successfully!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -201,9 +251,10 @@ export const updateSourceType = async (
 }
 
 export const deleteSourceType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const sourceTypeId = req.params.sourceTypeId
 	if (!sourceTypeId) {
 		res.status(SC.BAD_REQUEST).json({
@@ -212,12 +263,21 @@ export const deleteSourceType = async (
 		return
 	}
 	await deleteById(prisma.sourceType, 'sourceTypeId', sourceTypeId)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Source type deleted successfully!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Source type deleted successfully!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -286,18 +346,28 @@ export const getAllSourceTypes = async (
 /**
  * UOM goes here
  */
-export const createUOM = async (req: Request, res: Response): Promise<any> => {
+export const createUOM = async (req: any, res: Response): Promise<any> => {
+	const userId = req.auth._id
 	const data = {
 		uomId: uuid(),
 		name: req.body.name
 	}
 	await create(prisma.uOM, data)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'UOM successfully created!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'UOM successfully created!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -306,7 +376,8 @@ export const createUOM = async (req: Request, res: Response): Promise<any> => {
 		})
 }
 
-export const updateUOM = async (req: Request, res: Response): Promise<any> => {
+export const updateUOM = async (req: any, res: Response): Promise<any> => {
+	const userId = req.auth._id
 	const data = req.body
 	const uomId = req.params.uomId
 	if (!uomId) {
@@ -316,12 +387,21 @@ export const updateUOM = async (req: Request, res: Response): Promise<any> => {
 		return
 	}
 	await updateById(prisma.uOM, data, 'uomId', uomId)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'UOM updated successfully!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'UOM updated successfully!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -330,7 +410,8 @@ export const updateUOM = async (req: Request, res: Response): Promise<any> => {
 		})
 }
 
-export const deleteUOM = async (req: Request, res: Response): Promise<any> => {
+export const deleteUOM = async (req: any, res: Response): Promise<any> => {
+	const userId = req.auth._id
 	const uomId = req.params.uomId
 	if (!uomId) {
 		res.status(SC.BAD_REQUEST).json({
@@ -339,12 +420,21 @@ export const deleteUOM = async (req: Request, res: Response): Promise<any> => {
 		return
 	}
 	await deleteById(prisma.uOM, 'uomId', uomId)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'UOM deleted successfully!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'UOM deleted successfully!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -408,20 +498,30 @@ export const getAllUOMs = async (req: Request, res: Response): Promise<any> => {
  * packaging type goes here
  */
 export const createPackagingType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const data = {
 		packagingTypeId: uuid(),
 		name: req.body.name
 	}
 	await create(prisma.packagingType, data)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Packaging type successfully created!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Packaging type successfully created!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -431,9 +531,10 @@ export const createPackagingType = async (
 }
 
 export const updatePackagingType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const data = req.body
 	const packagingTypeId = req.params.packagingTypeId
 	if (!packagingTypeId) {
@@ -448,12 +549,21 @@ export const updatePackagingType = async (
 		'packagingTypeId',
 		packagingTypeId
 	)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Packaging type updated successfully!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Packaging type updated successfully!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({
@@ -463,9 +573,10 @@ export const updatePackagingType = async (
 }
 
 export const deletePackagingType = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
+	const userId = req.auth._id
 	const packagingTypeId = req.params.packagingTypeId
 	if (!packagingTypeId) {
 		res.status(SC.BAD_REQUEST).json({
@@ -474,12 +585,21 @@ export const deletePackagingType = async (
 		return
 	}
 	await deleteById(prisma.packagingType, 'packagingTypeId', packagingTypeId)
-		.then(data =>
+		.then(async data => {
+			const userData = await getById(prisma.user, 'id', userId)
+
+			loguser(
+				userData?.id!,
+				userData?.name!,
+				userData?.role!,
+				'Packaging type deleted successfully!',
+				res
+			)
 			res.status(SC.OK).json({
 				message: 'Packaging type deleted successfully!',
 				data
 			})
-		)
+		})
 		.catch(err => {
 			logger(err, 'ERROR')
 			res.status(SC.BAD_REQUEST).json({

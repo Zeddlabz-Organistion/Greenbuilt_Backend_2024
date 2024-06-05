@@ -167,6 +167,7 @@ export const updateEnergyConsumption = async (
 	res: Response
 ): Promise<any> => {
 	const powerConsumptionId = +(req.params.powerConsumptionId || '0')
+	const userId = req.auth._id
 	try {
 		const form = new formidable.IncomingForm()
 		await form.parse(req, async (err: any, fields: any, { file }: any) => {
@@ -192,13 +193,13 @@ export const updateEnergyConsumption = async (
 							}
 							await create(prisma.powerConsumption, data)
 								.then(async data => {
-									const userData = await getById(prisma.user, 'id', data.userId)
+									const userData = await getById(prisma.user, 'id', userId)
 
 									loguser(
 										userData?.id!,
 										userData?.name!,
 										userData?.role!,
-										`Power consumption data updated sucessfully!`,
+										`Power consumption data updated sucessfully. and power consumption id is ${powerConsumptionId}`,
 										res
 									)
 									return res.status(SC.OK).json({
@@ -253,11 +254,12 @@ export const updateEnergyConsumption = async (
 }
 
 export const approvePowerConsumption = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
 	const id = +(req.params.powerConsumptionId || '0')
-
+	const userId = req.auth._id
+	const userData = await getById(prisma.user, 'id', userId)
 	try {
 		await prisma.powerConsumption
 			.update({
@@ -287,12 +289,12 @@ export const approvePowerConsumption = async (
 									}
 								})
 
-								.then(async userData => {
+								.then(async user => {
 									loguser(
 										userData?.id!,
 										userData?.name!,
 										userData?.role!,
-										`Power consumption  has been approved sucessfully!`,
+										`Power consumption  has been approved sucessfully. and user name is ${user?.name}, id is ${user?.id}`,
 										res
 									)
 
@@ -322,15 +324,16 @@ export const approvePowerConsumption = async (
 }
 
 export const deletePowerConsumption = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
 	const powerConsumptionId = +(req.params.powerConsumptionId || '0')
 	try {
+		const userId = req.auth._id
+		const userData = await getById(prisma.user, 'id', userId)
 		await deleteById(prisma.powerConsumption, 'id', powerConsumptionId)
 			.then(async data => {
-				const userData = await getById(prisma.user, 'id', data.userId)
-
+				console.log(data)
 				loguser(
 					userData?.id!,
 					userData?.name!,

@@ -201,10 +201,10 @@ var updateDocument = function (req, res) { return __awaiter(void 0, void 0, void
                             return [4, (0, crud_1.updateById)(index_1.prisma.document, data, 'docId', docId)];
                         case 3:
                             updatedDocument = _a.sent();
-                            return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', updatedDocument.userId)];
+                            return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', req.auth._id)];
                         case 4:
                             userData = _a.sent();
-                            (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Document updated successfully!", res);
+                            (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Document updated successfully. document id is " + docId, res);
                             return [2, res.status(statusCode_1.statusCode.OK).json({
                                     message: 'Document updated successfully!',
                                     data: updatedDocument
@@ -261,18 +261,19 @@ var updateDocument = function (req, res) { return __awaiter(void 0, void 0, void
 }); };
 exports.updateDocument = updateDocument;
 var deleteDocument = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var docId, data, userData, err_3;
+    var userId, docId, userData, err_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                userId = req.auth._id;
                 docId = req.params.docId;
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 4, 5, 6]);
                 return [4, (0, crud_1.deleteById)(index_1.prisma.document, 'docId', docId)];
             case 2:
-                data = _a.sent();
-                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
+                _a.sent();
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
             case 3:
                 userData = _a.sent();
                 (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Document deleted successfully!", res);

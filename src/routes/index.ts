@@ -15,7 +15,7 @@ import { plugInRoute } from './plugin'
 import { logUsersRoute } from './logUsersData'
 export const routes = (app: Application) => {
 	app.use('/api', authRoute)
-	app.use('/api', staticRoutes)
+	app.use('/api', isSignedIn, isValidToken, staticRoutes)
 	app.use('/api', plugInRoute)
 	app.use('/api', isSignedIn, isValidToken, documentRoute)
 	app.use('/api', isSignedIn, isValidToken, userRoute)

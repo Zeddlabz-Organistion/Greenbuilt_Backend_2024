@@ -119,10 +119,7 @@ export const uploadDocument = async (
 	}
 }
 
-export const updateDocument = async (
-	req: Request,
-	res: Response
-): Promise<any> => {
+export const updateDocument = async (req: any, res: Response): Promise<any> => {
 	const docId = req.params.docId
 	try {
 		const form = new formidable.IncomingForm()
@@ -161,17 +158,13 @@ export const updateDocument = async (
 						'docId',
 						docId
 					)
-					const userData = await getById(
-						prisma.user,
-						'id',
-						updatedDocument.userId
-					)
+					const userData = await getById(prisma.user, 'id', req.auth._id)
 
 					loguser(
 						userData?.id!,
 						userData?.name!,
 						userData?.role!,
-						`Document updated successfully!`,
+						`Document updated successfully. document id is ${docId}`,
 						res
 					)
 
@@ -233,14 +226,12 @@ export const updateDocument = async (
 	}
 }
 
-export const deleteDocument = async (
-	req: Request,
-	res: Response
-): Promise<any> => {
+export const deleteDocument = async (req: any, res: Response): Promise<any> => {
+	const userId = req.auth._id
 	const docId = req.params.docId
 	try {
-		const data = await deleteById(prisma.document, 'docId', docId)
-		const userData = await getById(prisma.user, 'id', data.userId)
+		await deleteById(prisma.document, 'docId', docId)
+		const userData = await getById(prisma.user, 'id', userId)
 
 		loguser(
 			userData?.id!,

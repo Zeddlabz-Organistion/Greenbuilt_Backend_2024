@@ -120,16 +120,25 @@ export const signin = async (req: Request, res: Response): Promise<any> => {
 	}
 }
 
-export const signout = (res: Response): void => {
+export const signout = async (req: any, res: Response): Promise<any> => {
+	const userId = req.auth._id
+	const userData = await getById(prisma.user, 'id', userId)
+
+	loguser(
+		userData?.id!,
+		userData?.name!,
+		userData?.role!,
+		`user logout Sucessfully!`,
+		res
+	)
 	res.clearCookie('Token')
 	res.status(SC.OK).json({
 		message: 'User Signed Out Sucessfully!'
 	})
 }
 
-export const update = async (req: Request, res: Response): Promise<any> => {
+export const update = async (req: any, res: Response): Promise<any> => {
 	const userId = +(req.params.userId || '0')
-
 	const reqBody = req.body
 	const { email = '', password = '' } = req.body
 	try {
@@ -172,12 +181,12 @@ export const update = async (req: Request, res: Response): Promise<any> => {
 }
 
 export const approveCorporateUser = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
 	try {
 		const userId = +(req.params.userId || '0')
-		const userData = await getById(prisma.user, 'id', userId)
+		const userData = await getById(prisma.user, 'id', req.auth._id)
 
 		await prisma.user
 			.update({
@@ -429,7 +438,7 @@ export const approveCorporateUser = async (
 					userData?.id!,
 					userData?.name!,
 					userData?.role!,
-					`Coporate User has been Approved Successfully`,
+					`Coporate User id ${userId} and name ${user.name} has been Approved Successfully`,
 					res
 				)
 				return res.status(SC.OK).json({
@@ -451,12 +460,12 @@ export const approveCorporateUser = async (
 }
 
 export const updateUserPoints = async (
-	req: Request,
+	req: any,
 	res: Response
 ): Promise<any> => {
 	try {
 		const userId = +(req.params.userId || '0')
-		const userData = await getById(prisma.user, 'id', userId)
+		const userData = await getById(prisma.user, 'id', req.auth._id)
 		const points =
 			typeof req.body.points === 'string'
 				? +req.body.points
@@ -483,7 +492,7 @@ export const updateUserPoints = async (
 							userData?.id!,
 							userData?.name!,
 							userData?.role!,
-							`User points updated by ${data.points} and total points is ${data.totalPoints}`,
+							`User id is ${data.id} and name is ${data?.name} points updated by ${data.points} and total points is ${data.totalPoints}`,
 							res
 						)
 						return res.status(SC.OK).json({

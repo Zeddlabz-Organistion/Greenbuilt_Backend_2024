@@ -62,7 +62,7 @@ var createAsset = function (req, res) { return __awaiter(void 0, void 0, void 0,
                 userId = +(req.params.userId || '0');
                 asset = req.body.asset;
                 data = __assign(__assign({}, asset), { assetId: (0, uuid_1.v4)(), userId: userId });
-                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', req.auth._id)];
             case 1:
                 userData = _a.sent();
                 _a.label = 2;
@@ -70,7 +70,7 @@ var createAsset = function (req, res) { return __awaiter(void 0, void 0, void 0,
                 _a.trys.push([2, 4, 5, 6]);
                 return [4, (0, crud_1.create)(index_1.prisma.asset, data)
                         .then(function (data) {
-                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset created successfully!", res);
+                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset created successfully! for this user id " + userId, res);
                         return res.status(statusCode_1.statusCode.OK).json({
                             message: 'Asset created successfully by admin',
                             data: data
@@ -103,7 +103,7 @@ var bulkUpload = function (req, res) { return __awaiter(void 0, void 0, void 0, 
         switch (_a.label) {
             case 0:
                 userId = +(req.params.userId || '0');
-                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', req.auth._id)];
             case 1:
                 userData = _a.sent();
                 assets = req.body.assets;
@@ -113,7 +113,7 @@ var bulkUpload = function (req, res) { return __awaiter(void 0, void 0, void 0, 
                 _a.trys.push([2, 4, 5, 6]);
                 return [4, (0, crud_1.createMany)(index_1.prisma.asset, data)
                         .then(function (data) {
-                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Assets upload in bulk successfully by admin", res);
+                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Assets upload in bulk successfully for this user id " + userId, res);
                         return res.status(statusCode_1.statusCode.OK).json({
                             message: 'Assets upload in bulk successfully!',
                             data: data
@@ -153,10 +153,10 @@ var updateAsset = function (req, res) { return __awaiter(void 0, void 0, void 0,
                 return [4, (0, crud_1.updateById)(index_1.prisma.asset, asset, 'assetId', assetId)];
             case 2:
                 data = _a.sent();
-                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', req.auth._id)];
             case 3:
                 userData = _a.sent();
-                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset updated successfully by admin", res);
+                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset updated successfully! Asset id is " + assetId, res);
                 return [2, res.status(statusCode_1.statusCode.OK).json({
                         message: 'Asset updated successfully!',
                         data: data
@@ -176,7 +176,7 @@ var updateAsset = function (req, res) { return __awaiter(void 0, void 0, void 0,
 }); };
 exports.updateAsset = updateAsset;
 var deleteAsset = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var assetId, data, userData, err_4;
+    var assetId, userData, err_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -186,11 +186,11 @@ var deleteAsset = function (req, res) { return __awaiter(void 0, void 0, void 0,
                 _a.trys.push([1, 4, 5, 6]);
                 return [4, (0, crud_1.deleteById)(index_1.prisma.asset, 'assetId', assetId)];
             case 2:
-                data = _a.sent();
-                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
+                _a.sent();
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', req.auth._id)];
             case 3:
                 userData = _a.sent();
-                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset deleted successfully by admin", res);
+                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset deleted successfully! and assetId is " + assetId, res);
                 return [2, res.status(statusCode_1.statusCode.OK).json({
                         message: 'Asset deleted successfully!'
                     })];
