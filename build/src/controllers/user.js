@@ -38,8 +38,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllUsers = exports.getUserById = void 0;
 var index_1 = require("../prisma/index");
-var logger_1 = require("../utils/logger");
 var statusCode_1 = require("../utils/statusCode");
+var logger_1 = require("../utils/logger");
 var getUserById = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var id, err_1;
     return __generator(this, function (_a) {
@@ -93,7 +93,6 @@ var getAllUsers = function (_, res) { return __awaiter(void 0, void 0, void 0, f
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, 3, 4]);
-                console.log("nikhil");
                 return [4, index_1.prisma.user
                         .findMany()
                         .then(function (user) {

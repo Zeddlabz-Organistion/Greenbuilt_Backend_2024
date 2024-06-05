@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isSameUserOrAdmin = exports.isAdmin = exports.isCorporate = exports.isAuthenticated = exports.isValidToken = exports.isSignedIn = void 0;
+exports.isSameUserOrAdmin = exports.isAdmin = exports.isCorporate = exports.isValidToken = exports.isSignedIn = void 0;
 var express_jwt_1 = __importDefault(require("express-jwt"));
 var prisma_1 = require("../prisma");
 var statusCode_1 = require("../utils/statusCode");
@@ -56,16 +56,6 @@ var isValidToken = function (err, res, next) {
     return next();
 };
 exports.isValidToken = isValidToken;
-var isAuthenticated = function (req, res, next) {
-    var checker = req.profile && req.auth && req.profile.id == req.auth.id;
-    if (!checker) {
-        return res.status(statusCode_1.statusCode.FORBIDDEN).json({
-            error: 'ACCESS DENIED!'
-        });
-    }
-    return next();
-};
-exports.isAuthenticated = isAuthenticated;
 var isCorporate = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var authId;
     return __generator(this, function (_a) {

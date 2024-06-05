@@ -38,47 +38,46 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllLogUsersData = void 0;
 var index_1 = require("../prisma/index");
-var crud_1 = require("../helpers/crud");
 var statusCode_1 = require("../utils/statusCode");
 var logger_1 = require("../utils/logger");
 var getAllLogUsersData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var take_1, skip_1, err_1;
+    var take, skip, data, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, 3, 4]);
-                take_1 = +(req.query.limit || '10'), skip_1 = +(req.query.offset || '0');
-                return [4, (0, crud_1.getAll)(index_1.prisma.logUserData, take_1, skip_1)
-                        .then(function (data) {
-                        if (!(data === null || data === void 0 ? void 0 : data.length)) {
-                            return res.status(statusCode_1.statusCode.OK).json({
-                                message: 'log users data not found!'
-                            });
+                take = +(req.query.limit || '10');
+                skip = +(req.query.offset || '0');
+                return [4, index_1.prisma.logUserData.findMany({
+                        take: take,
+                        skip: skip,
+                        orderBy: {
+                            timestamp: 'desc'
                         }
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'log users data fetched successfully!',
-                            data: data,
-                            pagination: {
-                                limit: take_1,
-                                offset: skip_1
-                            }
-                        });
-                    })
-                        .catch(function (err) {
-                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                        return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                            error: 'Failed to fetch user assets!'
-                        });
                     })];
             case 1:
-                _a.sent();
-                return [3, 4];
+                data = _a.sent();
+                if (!data.length) {
+                    return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
+                            message: 'Log users data not found!'
+                        })];
+                }
+                return [2, res.status(statusCode_1.statusCode.OK).json({
+                        message: 'Log users data fetched successfully!',
+                        data: data,
+                        pagination: {
+                            limit: take,
+                            offset: skip
+                        }
+                    })];
             case 2:
                 err_1 = _a.sent();
                 (0, logger_1.loggerUtil)(err_1, 'ERROR');
-                return [3, 4];
+                return [2, res.status(statusCode_1.statusCode.INTERNAL_SERVER_ERROR).json({
+                        error: 'Failed to fetch log users data!'
+                    })];
             case 3:
-                (0, logger_1.loggerUtil)("Get All User Assets API Called!");
+                (0, logger_1.loggerUtil)('Get All log users data API Called!');
                 return [7];
             case 4: return [2];
         }

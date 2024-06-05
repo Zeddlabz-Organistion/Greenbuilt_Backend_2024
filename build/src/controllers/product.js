@@ -66,9 +66,7 @@ var createProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 5, 6, 7]);
-                return [4, index_1.prisma.user.findUnique({
-                        where: { id: userId }
-                    })];
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
             case 2:
                 userData_1 = _a.sent();
                 return [4, index_1.prisma.product
@@ -173,13 +171,11 @@ var bulkUpload = function (req, res) { return __awaiter(void 0, void 0, void 0, 
                 userId = req.auth._id;
                 products = req.body.products;
                 data = products === null || products === void 0 ? void 0 : products.map(function (val) { return (__assign(__assign({}, val), { productId: (0, uuid_1.v4)(), userId: userId })); });
-                titlesWithQuotes = data.map(function (item) { return "'" + item.title + "'"; }).join(", ");
+                titlesWithQuotes = data.map(function (item) { return "'" + item.title + "'"; }).join(', ');
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 4, 5, 6]);
-                return [4, index_1.prisma.user.findUnique({
-                        where: { id: userId }
-                    })];
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
             case 2:
                 userData_2 = _a.sent();
                 return [4, (0, crud_1.createMany)(index_1.prisma.product, data)
@@ -221,9 +217,7 @@ var deleteProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 4, 5, 6]);
-                return [4, index_1.prisma.user.findUnique({
-                        where: { id: userId }
-                    })];
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
             case 2:
                 userData_3 = _a.sent();
                 return [4, (0, crud_1.getById)(index_1.prisma.product, 'productId', productId)
@@ -415,33 +409,38 @@ var approveProduct = function (req, res) { return __awaiter(void 0, void 0, void
             case 1:
                 _a.trys.push([1, 3, 4, 5]);
                 return [4, (0, crud_1.updateById)(index_1.prisma.product, data, 'productId', productId).then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4, index_1.prisma.notification
-                                        .create({
-                                        data: {
-                                            notificationId: (0, uuid_1.v4)(),
-                                            date: new Date().getDate(),
-                                            month: new Date().getMonth() + 1,
-                                            year: new Date().getFullYear(),
-                                            fullDate: new Date(),
-                                            text: "Product - " + data.title + " has been approved!",
-                                            userId: data === null || data === void 0 ? void 0 : data.userId
-                                        }
-                                    })
-                                        .then(function () {
-                                        return res.status(statusCode_1.statusCode.OK).json({
-                                            message: 'Product approved successfully!',
-                                            data: data
-                                        });
-                                    })
-                                        .catch(function (err) {
-                                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                                        return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                            error: 'Product approval failed!'
-                                        });
-                                    })];
+                                case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
                                 case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Product - " + data.title + " has been approved by admin", res);
+                                    return [4, index_1.prisma.notification
+                                            .create({
+                                            data: {
+                                                notificationId: (0, uuid_1.v4)(),
+                                                date: new Date().getDate(),
+                                                month: new Date().getMonth() + 1,
+                                                year: new Date().getFullYear(),
+                                                fullDate: new Date(),
+                                                text: "Product - " + data.title + " has been approved!",
+                                                userId: data === null || data === void 0 ? void 0 : data.userId
+                                            }
+                                        })
+                                            .then(function () {
+                                            return res.status(statusCode_1.statusCode.OK).json({
+                                                message: 'Product approved successfully!',
+                                                data: data
+                                            });
+                                        })
+                                            .catch(function (err) {
+                                            (0, logger_1.loggerUtil)(err, 'ERROR');
+                                            return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                                                error: 'Product approval failed!'
+                                            });
+                                        })];
+                                case 2:
                                     _a.sent();
                                     return [2];
                             }
@@ -484,12 +483,21 @@ var updateProductPoints = function (req, res) { return __awaiter(void 0, void 0,
                                         points: points
                                     };
                                     return [4, (0, crud_1.updateById)(index_1.prisma.product, data, 'productId', product === null || product === void 0 ? void 0 : product.productId)
-                                            .then(function (data) {
-                                            return res.status(statusCode_1.statusCode.OK).json({
-                                                message: 'Product updated successfully!',
-                                                data: data
+                                            .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                                            var userData;
+                                            return __generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0: return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
+                                                    case 1:
+                                                        userData = _a.sent();
+                                                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Product points updated successfully by admin", res);
+                                                        return [2, res.status(statusCode_1.statusCode.OK).json({
+                                                                message: 'Product updated successfully!',
+                                                                data: data
+                                                            })];
+                                                }
                                             });
-                                        })
+                                        }); })
                                             .catch(function (err) {
                                             (0, logger_1.loggerUtil)(err, 'ERROR');
                                             return res.status(statusCode_1.statusCode.BAD_REQUEST).json({

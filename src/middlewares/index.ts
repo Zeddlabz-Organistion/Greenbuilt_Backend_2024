@@ -17,19 +17,19 @@ export const isValidToken = (err: any, res: Response, next: NextFunction) => {
 	return next()
 }
 
-export const isAuthenticated = (
-	req: any,
-	res: Response,
-	next: NextFunction
-) => {
-	const checker = req.profile && req.auth && req.profile.id == req.auth.id
-	if (!checker) {
-		return res.status(SC.FORBIDDEN).json({
-			error: 'ACCESS DENIED!'
-		})
-	}
-	return next()
-}
+// export const isAuthenticated = (
+// 	req: any,
+// 	res: Response,
+// 	next: NextFunction
+// ) => {
+// 	const checker = req.profile && req.auth && req.profile.id == req.auth.id
+// 	if (!checker) {
+// 		return res.status(SC.FORBIDDEN).json({
+// 			error: 'ACCESS DENIED!'
+// 		})
+// 	}
+// 	return next()
+// }
 
 export const isCorporate = async (
 	req: any,

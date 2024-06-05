@@ -8,6 +8,7 @@ import { prisma } from '../prisma/index'
 import { loggerUtil as logger } from '../utils/logger'
 import { statusCode as SC } from '../utils/statusCode'
 import { isEmpty } from 'lodash'
+import { loguser } from '../helpers/logUser'
 import {
 	create,
 	deleteById,
@@ -34,8 +35,8 @@ export const createEnergyConsumption = async (
 				.findMany({
 					where: {
 						userId: userId,
-						month: +(fields.month),
-						year: +(fields.year)
+						month: +fields.month,
+						year: +fields.year
 					}
 				})
 				.then(async monthlyPlans => {
@@ -107,7 +108,20 @@ export const createEnergyConsumption = async (
 												async val => {
 													if (!val.length) {
 														await create(prisma.powerConsumption, dataPrisma)
-															.then(data => {
+															.then(async data => {
+																const userData = await getById(
+																	prisma.user,
+																	'id',
+																	userId
+																)
+
+																loguser(
+																	userData?.id!,
+																	userData?.name!,
+																	userData?.role!,
+																	`Power consumption data created sucessfully!`,
+																	res
+																)
 																return res.status(SC.OK).json({
 																	message:
 																		'Power consumption data created sucessfully!',
@@ -177,7 +191,16 @@ export const updateEnergyConsumption = async (
 								ebBill: doc
 							}
 							await create(prisma.powerConsumption, data)
-								.then(data => {
+								.then(async data => {
+									const userData = await getById(prisma.user, 'id', data.userId)
+
+									loguser(
+										userData?.id!,
+										userData?.name!,
+										userData?.role!,
+										`Power consumption data updated sucessfully!`,
+										res
+									)
 									return res.status(SC.OK).json({
 										message: 'Power consumption data updated sucessfully!',
 										data: data
@@ -199,7 +222,16 @@ export const updateEnergyConsumption = async (
 					'id',
 					powerConsumptionId
 				)
-					.then(data => {
+					.then(async data => {
+						const userData = await getById(prisma.user, 'id', data.userId)
+
+						loguser(
+							userData?.id!,
+							userData?.name!,
+							userData?.role!,
+							`Power consumption data updated sucessfully!`,
+							res
+						)
 						return res.status(SC.OK).json({
 							message: 'Power consumption data updated sucessfully!',
 							data: data
@@ -237,6 +269,7 @@ export const approvePowerConsumption = async (
 				}
 			})
 			.then(async data => {
+				// data.userId
 				await prisma.montlyConsumptionPlan
 					.findMany({
 						where: {
@@ -247,7 +280,6 @@ export const approvePowerConsumption = async (
 					})
 					.then(async monthlyPlans => {
 						if (monthlyPlans.length) {
-							
 							await prisma.user
 								.findFirst({
 									where: {
@@ -255,7 +287,15 @@ export const approvePowerConsumption = async (
 									}
 								})
 
-								.then(() => {
+								.then(async userData => {
+									loguser(
+										userData?.id!,
+										userData?.name!,
+										userData?.role!,
+										`Power consumption  has been approved sucessfully!`,
+										res
+									)
+
 									res.status(SC.OK).json({
 										message: 'Power consumption  has been approved sucessfully!'
 									})
@@ -288,7 +328,16 @@ export const deletePowerConsumption = async (
 	const powerConsumptionId = +(req.params.powerConsumptionId || '0')
 	try {
 		await deleteById(prisma.powerConsumption, 'id', powerConsumptionId)
-			.then(() => {
+			.then(async data => {
+				const userData = await getById(prisma.user, 'id', data.userId)
+
+				loguser(
+					userData?.id!,
+					userData?.name!,
+					userData?.role!,
+					'Power consumption data deleted sucessfully!',
+					res
+				)
 				return res.status(SC.OK).json({
 					message: 'Power consumption data deleted sucessfully!'
 				})

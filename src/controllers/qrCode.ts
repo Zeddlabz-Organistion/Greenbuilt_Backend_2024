@@ -2,14 +2,15 @@ import { Response, Request } from 'express'
 import { prisma } from '../prisma/index'
 import { loggerUtil as logger } from '../utils/logger'
 import { statusCode as SC } from '../utils/statusCode'
+import { loguser } from '../helpers/logUser'
 import { v4 as uuid } from 'uuid'
-
+import { getById } from '../helpers/crud'
 export const generateQRCode = async (req: any, res: Response): Promise<any> => {
 	const userId = req.auth._id
 	const productId = req.params.productId
 	const uomUnits: number = +(req.body.uomUnits || '1')
-
 	try {
+		const userData = await getById(prisma.user, 'id', userId)
 		await prisma.product
 			.findUnique({
 				where: {
@@ -51,6 +52,13 @@ export const generateQRCode = async (req: any, res: Response): Promise<any> => {
 												}
 											})
 											.then(qr => {
+												loguser(
+													userData?.id!,
+													userData?.name!,
+													userData?.role!,
+													`Qr generated for this Product title ${product.title}`,
+													res
+												)
 												return res.status(SC.OK).json({
 													message: 'QR Code generated successfully!',
 													data: qr
@@ -88,6 +96,7 @@ export const generateMultipleQRCodes = async (
 	const uomUnits: number = +(req.body.uomUnits || '1')
 	const callId = uuid()
 	try {
+		const userData = await getById(prisma.user, 'id', userId)
 		await prisma.product
 			.findUnique({
 				where: {
@@ -138,6 +147,13 @@ export const generateMultipleQRCodes = async (
 												data: combinedQrs
 											})
 											.then(count => {
+												loguser(
+													userData?.id!,
+													userData?.name!,
+													userData?.role!,
+													`Multiple Qr generated for this Product title ${product.title}`,
+													res
+												)
 												return res.status(SC.OK).json({
 													message: 'QR Code generated successfully!',
 													data: combinedQrs,
@@ -233,6 +249,13 @@ export const consumeQRCode = async (req: any, res: Response): Promise<any> => {
 															}
 														})
 														.then(() => {
+															loguser(
+																user?.id!,
+																user?.name!,
+																user?.role!,
+																'QR code consumed successfully',
+																res
+															)
 															return res.status(SC.OK).json({
 																message: 'QR code consumed successfully',
 																pointsConsumed,

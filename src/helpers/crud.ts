@@ -107,10 +107,7 @@ export const getAllById = (
 	})
 }
 
-export const getAllByQuery = (
-	schema: any,
-	queryObj: object
-): Promise<any> => {
+export const getAllByQuery = (schema: any, queryObj: object): Promise<any> => {
 	return new Promise(async (res, rej) => {
 		await schema
 			.findMany({

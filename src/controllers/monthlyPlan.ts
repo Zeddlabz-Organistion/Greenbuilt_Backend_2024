@@ -7,7 +7,12 @@ import { v4 as uuid } from 'uuid'
 
 import { deleteById, getById, getAllById } from '../helpers/crud'
 import { forIn, isEmpty } from 'lodash'
-
+import { loguser } from '../helpers/logUser'
+interface User {
+	id: number
+	name: string
+	role: number
+}
 export const createMonthlyConsumptionPlan = async (
 	req: any,
 	res: Response
@@ -49,7 +54,16 @@ export const createMonthlyConsumptionPlan = async (
 			async val => {
 				if (!val.length) {
 					await createMany(prisma.montlyConsumptionPlan, finalData)
-						.then(count => {
+						.then(async count => {
+							const userData = await getById(prisma.user, 'id', count.userId)
+
+							loguser(
+								userData?.id!,
+								userData?.name!,
+								userData?.role!,
+								'Monthly consumption plan created sucessfully!',
+								res
+							)
 							res.status(SC.OK).json({
 								message: 'Monthly consumption plan created sucessfully!',
 								count,
@@ -107,8 +121,16 @@ export const updateMonthlyConsumptionPlan = async (
 							(val.thirdPartyPurchase || 0)
 					}
 				})
-				.then(data => {
-					console.log(data)
+				.then(async data => {
+					const userData = await getById(prisma.user, 'id', data.userId)
+
+					loguser(
+						userData?.id!,
+						userData?.name!,
+						userData?.role!,
+						`Monthly Consumption Plan updated successfully.`,
+						res
+					)
 				})
 				.catch(err => {
 					logger(err, 'ERROR')
@@ -154,93 +176,118 @@ export const approveMonthlyConsumptionPlan = async (
 	const monthlyPlanId = req.params.monthlyPlanId
 
 	try {
-		await prisma.montlyConsumptionPlan
-			.findMany({
-				where: {
-					monthlyPlanId
-				}
+		const monthlyPlans = await prisma.montlyConsumptionPlan.findMany({
+			where: { monthlyPlanId }
+		})
+
+		if (!monthlyPlans.length) {
+			return res.status(SC.NOT_FOUND).json({
+				message: 'Monthly consumption plan not found!'
 			})
-			.then(async monthlyPlan => {
-				let total = 0
-				monthlyPlan?.forEach(data => (total += data.total || 0))
-				await prisma.user
-					.findFirst({
-						where: {
-							id: monthlyPlan[0]?.userId
-						}
-					})
-					.then(async user => {
-						await prisma.user.update({
-							where: {
-								id: monthlyPlan[0]?.userId
-							},
-							data: {
-								points: (user?.points || 0) + total,
-								totalPoints: (user?.totalPoints || 0) + total
-							}
-						})
-					})
-					.then(async () => {
-						await prisma.montlyConsumptionPlan
-							.updateMany({
-								where: {
-									monthlyPlanId
-								},
-								data: {
-									isApproved: true
-								}
-							})
-							.then(data => {
-								res.status(SC.OK).json({
-									message:
-										'Monthly consumption plan has been approved sucessfully!',
-									data: data
-								})
-							})
-							.catch(err => {
-								logger(err, 'ERROR')
-								res.status(SC.BAD_REQUEST).json({
-									error:
-										'Error while approving monthly consumption plan with source type'
-								})
-							})
-					})
+		}
+
+		let total = 0
+		monthlyPlans.forEach(plan => {
+			total += plan.total || 0
+		})
+
+		const user = await prisma.user.findFirst({
+			where: { id: monthlyPlans[0]?.userId }
+		})
+
+		if (!user) {
+			return res.status(SC.NOT_FOUND).json({
+				message: 'User not found!'
 			})
+		}
+
+		const updatedUser = await prisma.user.update({
+			where: { id: monthlyPlans[0]?.userId },
+			data: {
+				points: (user.points || 0) + total,
+				totalPoints: (user.totalPoints || 0) + total
+			}
+		})
+
+		const updatedPlans = await prisma.montlyConsumptionPlan.updateMany({
+			where: { monthlyPlanId },
+			data: { isApproved: true }
+		})
+
+		const userData: User = {
+			id: updatedUser.id!,
+			name: updatedUser.name!,
+			role: updatedUser.role!
+		}
+
+		loguser(
+			userData.id,
+			userData.name,
+			userData.role,
+			`Monthly consumption plan approved with total points: ${total}`,
+			res
+		)
+
+		res.status(SC.OK).json({
+			message: 'Monthly consumption plan has been approved successfully!',
+			data: updatedPlans
+		})
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		res.status(SC.INTERNAL_SERVER_ERROR).json({
+			error: 'Failed to approve monthly consumption plan!'
+		})
 	} finally {
-		logger(`Approve Monthly Consumption Plan with Source API Called!`)
+		logger('Approve Monthly Consumption Plan API Called!')
 	}
 }
 
 export const deleteByMonthlyConsumptionPlanId = async (
-	req: any,
+	req: Request,
 	res: Response
 ): Promise<any> => {
 	const monthlyPlanId = req.params.monthlyPlanId
 	try {
-		await prisma.montlyConsumptionPlan
-			.deleteMany({
-				where: {
-					monthlyPlanId
-				}
+		const monthlyPlans = await prisma.montlyConsumptionPlan.findMany({
+			where: { monthlyPlanId }
+		})
+
+		if (!monthlyPlans.length) {
+			return res.status(SC.NOT_FOUND).json({
+				message: 'Monthly consumption plan not found!'
 			})
-			.then(data => {
-				res.status(SC.OK).json({
-					message: 'Monthly consumption plan deleted sucessfully!',
-					data: data
-				})
+		}
+		const userData = await getById(prisma.user, 'id', monthlyPlans[0]?.userId)
+
+		if (!userData) {
+			return res.status(SC.NOT_FOUND).json({
+				message: 'User not found!'
 			})
-			.catch(err => {
-				logger(err, 'ERROR')
-				res.status(SC.BAD_REQUEST).json({
-					error: 'Error while deleting monthly consumption plan'
-				})
-			})
+		}
+
+		const deleteResult = await prisma.montlyConsumptionPlan.deleteMany({
+			where: { monthlyPlanId }
+		})
+
+		loguser(
+			userData.id,
+			userData.name,
+			userData.role!,
+			`Monthly consumption plan deleted successfully!`,
+			res
+		)
+
+		res.status(SC.OK).json({
+			message: 'Monthly consumption plan deleted successfully!',
+			data: deleteResult
+		})
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		res.status(SC.INTERNAL_SERVER_ERROR).json({
+			error: 'Error while deleting monthly consumption plan'
+		})
 	} finally {
-		logger(`Delete By Monthly Consumption Plan Id API Called!`)
+		logger('Delete By Monthly Consumption Plan Id API Called!')
 	}
 }
 
@@ -251,7 +298,16 @@ export const deleteMonthlyConsumptionById = async (
 	const id = +(req.params.monthlyPlanId || '0')
 	try {
 		await deleteById(prisma.montlyConsumptionPlan, 'id', id)
-			.then(data => {
+			.then(async data => {
+				const userData = await getById(prisma.user, 'id', data.userId)
+
+				loguser(
+					userData?.id!,
+					userData?.name!,
+					userData?.role!,
+					`Monthly consumption plan deleted sucessfully!`,
+					res
+				)
 				res.status(SC.OK).json({
 					message: 'Monthly consumption plan deleted sucessfully!',
 					data: data

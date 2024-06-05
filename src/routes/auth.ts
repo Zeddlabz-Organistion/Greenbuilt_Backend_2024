@@ -27,7 +27,7 @@ authRoute.post(
 			.withMessage('Password length should be minimum of 8 characters')
 	],
 	signup
-)
+) //log user data
 authRoute.post(
 	'/signin',
 	[
@@ -37,9 +37,9 @@ authRoute.post(
 			.withMessage('Password length should be minimum of 8 characters')
 	],
 	signin
-)
+) //log user data
 authRoute.get('/signout', signout)
-authRoute.put('/update/:userId', update)
+authRoute.put('/update/:userId', update) //log user data
 authRoute.post('/forgot-password', forgotPassword)
 authRoute.put(
 	'/user/update-points/:userId',
@@ -47,13 +47,13 @@ authRoute.put(
 	isValidToken,
 	isAdmin,
 	updateUserPoints
-)
+) //log user data
 authRoute.post(
 	'/user/approve/:userId',
 	isSignedIn,
 	isValidToken,
 	isAdmin,
 	approveCorporateUser
-)
+) //log user data
 
 export { authRoute }

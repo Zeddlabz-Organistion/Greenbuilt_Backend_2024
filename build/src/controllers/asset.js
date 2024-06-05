@@ -53,21 +53,26 @@ var logger_1 = require("../utils/logger");
 var statusCode_1 = require("../utils/statusCode");
 var uuid_1 = require("uuid");
 var crud_1 = require("../helpers/crud");
+var logUser_1 = require("../helpers/logUser");
 var createAsset = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, asset, data, err_1;
+    var userId, asset, data, userData, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 userId = +(req.params.userId || '0');
                 asset = req.body.asset;
                 data = __assign(__assign({}, asset), { assetId: (0, uuid_1.v4)(), userId: userId });
-                _a.label = 1;
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                userData = _a.sent();
+                _a.label = 2;
+            case 2:
+                _a.trys.push([2, 4, 5, 6]);
                 return [4, (0, crud_1.create)(index_1.prisma.asset, data)
                         .then(function (data) {
+                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset created successfully!", res);
                         return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Asset created successfully!',
+                            message: 'Asset created successfully by admin',
                             data: data
                         });
                     })
@@ -77,34 +82,38 @@ var createAsset = function (req, res) { return __awaiter(void 0, void 0, void 0,
                             error: 'Asset creation failed!'
                         });
                     })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_1 = _a.sent();
                 (0, logger_1.loggerUtil)(err_1, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Create Asset API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
 exports.createAsset = createAsset;
 var bulkUpload = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, assets, data, err_2;
+    var userId, userData, assets, data, err_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 userId = +(req.params.userId || '0');
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+            case 1:
+                userData = _a.sent();
                 assets = req.body.assets;
                 data = assets === null || assets === void 0 ? void 0 : assets.map(function (val) { return (__assign(__assign({}, val), { assetId: (0, uuid_1.v4)(), userId: userId })); });
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                _a.label = 2;
+            case 2:
+                _a.trys.push([2, 4, 5, 6]);
                 return [4, (0, crud_1.createMany)(index_1.prisma.asset, data)
                         .then(function (data) {
+                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Assets upload in bulk successfully by admin", res);
                         return res.status(statusCode_1.statusCode.OK).json({
                             message: 'Assets upload in bulk successfully!',
                             data: data
@@ -116,23 +125,23 @@ var bulkUpload = function (req, res) { return __awaiter(void 0, void 0, void 0, 
                             error: 'Assets upload failed!'
                         });
                     })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_2 = _a.sent();
                 (0, logger_1.loggerUtil)(err_2, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Bulk upload Asset API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
 exports.bulkUpload = bulkUpload;
 var updateAsset = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var assetId, asset, err_3;
+    var assetId, asset, data, userData, err_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -140,67 +149,61 @@ var updateAsset = function (req, res) { return __awaiter(void 0, void 0, void 0,
                 asset = req.body.asset;
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4, (0, crud_1.updateById)(index_1.prisma.asset, asset, 'assetId', assetId)
-                        .then(function (data) {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Asset updated successfully!',
-                            data: data
-                        });
-                    })
-                        .catch(function (err) {
-                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                        return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                            error: 'Asset updation failed!'
-                        });
-                    })];
+                _a.trys.push([1, 4, 5, 6]);
+                return [4, (0, crud_1.updateById)(index_1.prisma.asset, asset, 'assetId', assetId)];
             case 2:
-                _a.sent();
-                return [3, 5];
+                data = _a.sent();
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
             case 3:
+                userData = _a.sent();
+                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset updated successfully by admin", res);
+                return [2, res.status(statusCode_1.statusCode.OK).json({
+                        message: 'Asset updated successfully!',
+                        data: data
+                    })];
+            case 4:
                 err_3 = _a.sent();
                 (0, logger_1.loggerUtil)(err_3, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                        error: 'Asset updation failed!'
+                    })];
+            case 5:
                 (0, logger_1.loggerUtil)("Asset Update API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
 exports.updateAsset = updateAsset;
 var deleteAsset = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var assetId, err_4;
+    var assetId, data, userData, err_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 assetId = req.params.assetId;
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4, (0, crud_1.deleteById)(index_1.prisma.asset, 'assetId', assetId)
-                        .then(function () {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Asset deleted successfully!'
-                        });
-                    })
-                        .catch(function (err) {
-                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                        return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                            error: 'Asset deletion failed!'
-                        });
-                    })];
+                _a.trys.push([1, 4, 5, 6]);
+                return [4, (0, crud_1.deleteById)(index_1.prisma.asset, 'assetId', assetId)];
             case 2:
-                _a.sent();
-                return [3, 5];
+                data = _a.sent();
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
             case 3:
+                userData = _a.sent();
+                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Asset deleted successfully by admin", res);
+                return [2, res.status(statusCode_1.statusCode.OK).json({
+                        message: 'Asset deleted successfully!'
+                    })];
+            case 4:
                 err_4 = _a.sent();
                 (0, logger_1.loggerUtil)(err_4, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                        error: 'Asset deletion failed!'
+                    })];
+            case 5:
                 (0, logger_1.loggerUtil)("Asset Delete API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };

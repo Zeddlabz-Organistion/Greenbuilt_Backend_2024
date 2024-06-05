@@ -51,9 +51,11 @@ exports.getQRBySearchTerm = exports.getAllQRsByQuery = exports.getAllConsumedQRs
 var index_1 = require("../prisma/index");
 var logger_1 = require("../utils/logger");
 var statusCode_1 = require("../utils/statusCode");
+var logUser_1 = require("../helpers/logUser");
 var uuid_1 = require("uuid");
+var crud_1 = require("../helpers/crud");
 var generateQRCode = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, productId, uomUnits, err_1;
+    var userId, productId, uomUnits, userData_1, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -62,7 +64,10 @@ var generateQRCode = function (req, res) { return __awaiter(void 0, void 0, void
                 uomUnits = +(req.body.uomUnits || '1');
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                _a.trys.push([1, 4, 5, 6]);
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+            case 2:
+                userData_1 = _a.sent();
                 return [4, index_1.prisma.product
                         .findUnique({
                         where: {
@@ -111,6 +116,7 @@ var generateQRCode = function (req, res) { return __awaiter(void 0, void 0, void
                                                                             }
                                                                         })
                                                                             .then(function (qr) {
+                                                                            (0, logUser_1.loguser)(userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.id, userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.name, userData_1 === null || userData_1 === void 0 ? void 0 : userData_1.role, "Qr generated for this Product title " + product.title, res);
                                                                             return res.status(statusCode_1.statusCode.OK).json({
                                                                                 message: 'QR Code generated successfully!',
                                                                                 data: qr
@@ -147,23 +153,23 @@ var generateQRCode = function (req, res) { return __awaiter(void 0, void 0, void
                             }
                         });
                     }); })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_1 = _a.sent();
                 (0, logger_1.loggerUtil)(err_1, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Generate QR Code API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
 exports.generateQRCode = generateQRCode;
 var generateMultipleQRCodes = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, productId, unitsToGenerate, uomUnits, callId, err_2;
+    var userId, productId, unitsToGenerate, uomUnits, callId, userData_2, err_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -174,7 +180,10 @@ var generateMultipleQRCodes = function (req, res) { return __awaiter(void 0, voi
                 callId = (0, uuid_1.v4)();
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
+                _a.trys.push([1, 4, 5, 6]);
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', userId)];
+            case 2:
+                userData_2 = _a.sent();
                 return [4, index_1.prisma.product
                         .findUnique({
                         where: {
@@ -233,6 +242,7 @@ var generateMultipleQRCodes = function (req, res) { return __awaiter(void 0, voi
                                                                                 data: combinedQrs
                                                                             })
                                                                                 .then(function (count) {
+                                                                                (0, logUser_1.loguser)(userData_2 === null || userData_2 === void 0 ? void 0 : userData_2.id, userData_2 === null || userData_2 === void 0 ? void 0 : userData_2.name, userData_2 === null || userData_2 === void 0 ? void 0 : userData_2.role, "Multiple Qr generated for this Product title " + product.title, res);
                                                                                 return res.status(statusCode_1.statusCode.OK).json({
                                                                                     message: 'QR Code generated successfully!',
                                                                                     data: combinedQrs,
@@ -270,17 +280,17 @@ var generateMultipleQRCodes = function (req, res) { return __awaiter(void 0, voi
                             }
                         });
                     }); })];
-            case 2:
-                _a.sent();
-                return [3, 5];
             case 3:
+                _a.sent();
+                return [3, 6];
+            case 4:
                 err_2 = _a.sent();
                 (0, logger_1.loggerUtil)(err_2, 'ERROR');
-                return [3, 5];
-            case 4:
+                return [3, 6];
+            case 5:
                 (0, logger_1.loggerUtil)("Generate QR Code API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
@@ -372,6 +382,7 @@ var consumeQRCode = function (req, res) { return __awaiter(void 0, void 0, void 
                                                                                                             }
                                                                                                         })
                                                                                                             .then(function () {
+                                                                                                            (0, logUser_1.loguser)(user === null || user === void 0 ? void 0 : user.id, user === null || user === void 0 ? void 0 : user.name, user === null || user === void 0 ? void 0 : user.role, 'QR code consumed successfully', res);
                                                                                                             return res.status(statusCode_1.statusCode.OK).json({
                                                                                                                 message: 'QR code consumed successfully',
                                                                                                                 pointsConsumed: pointsConsumed,

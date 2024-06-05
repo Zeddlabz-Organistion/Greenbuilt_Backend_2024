@@ -41,7 +41,7 @@ export const getUserById = async (
 
 export const getAllUsers = async (_: any, res: Response): Promise<any> => {
 	try {
-		console.log('nikhil')
+		// console.log('nikhil')
 		await prisma.user
 			.findMany()
 			.then(user => {

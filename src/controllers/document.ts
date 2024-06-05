@@ -15,7 +15,7 @@ import {
 	updateById
 	// getAllById
 } from '../helpers/crud'
-
+import { loguser } from '../helpers/logUser'
 const s3 = new AWS.S3({
 	accessKeyId: process.env.AWS_ACCESS_KEY,
 	secretAccessKey: process.env.AWS_ACCESS_SECRET_KEY,
@@ -80,6 +80,14 @@ export const uploadDocument = async (
 										}
 									})
 									.then(USER => {
+										loguser(
+											USER?.id!,
+											USER?.name!,
+											USER?.role!,
+											`Document uploaded sucessfully!`,
+											res
+										)
+
 										return res.status(SC.OK).json({
 											message: 'Document uploaded sucessfully!',
 											data: responseData,
@@ -118,62 +126,108 @@ export const updateDocument = async (
 	const docId = req.params.docId
 	try {
 		const form = new formidable.IncomingForm()
-		await form.parse(req, async (err: any, fields: any, { file }: any) => {
+
+		form.parse(req, async (err: any, fields: any, files: any) => {
 			if (err) {
 				logger(err, 'ERROR')
-				res.status(SC.BAD_REQUEST).json({
+				return res.status(SC.BAD_REQUEST).json({
 					error: 'Problem with document'
 				})
 			}
 			const { title } = fields
+			const file = files.file
+
 			if (file) {
 				if (file.size > 3000000) {
-					res.status(SC.BAD_REQUEST).json({
+					return res.status(SC.BAD_REQUEST).json({
 						error: 'File size should be less than 3 MB'
 					})
 				}
-				sharp(fs.readFileSync(file.filepath))
-					.resize(1000)
-					.toBuffer()
-					.then(async doc => {
-						const data = {
-							file: doc,
-							fileName: file.originalFilename
-						} as any
-						if (!isEmpty(title)) data.title = title
 
-						await updateById(prisma.document, data, 'docId', docId)
-							.then(data => {
-								return res.status(SC.OK).json({
-									message: 'Document updated sucessfully!',
-									data: data
-								})
-							})
-							.catch(err => {
-								logger(err, 'ERROR')
-								return res.status(SC.BAD_REQUEST).json({
-									error: 'Error while updating document'
-								})
-							})
+				try {
+					const doc = await sharp(fs.readFileSync(file.filepath))
+						.resize(1000)
+						.toBuffer()
+
+					const data: any = {
+						file: doc,
+						fileName: file.originalFilename
+					}
+					if (title) data.title = title
+
+					const updatedDocument = await updateById(
+						prisma.document,
+						data,
+						'docId',
+						docId
+					)
+					const userData = await getById(
+						prisma.user,
+						'id',
+						updatedDocument.userId
+					)
+
+					loguser(
+						userData?.id!,
+						userData?.name!,
+						userData?.role!,
+						`Document updated successfully!`,
+						res
+					)
+
+					return res.status(SC.OK).json({
+						message: 'Document updated successfully!',
+						data: updatedDocument
 					})
+				} catch (err: any) {
+					logger(err, 'ERROR')
+					return res.status(SC.BAD_REQUEST).json({
+						error: 'Error while updating document'
+					})
+				}
 			} else if (title) {
-				await await updateById(prisma.document, { title }, 'docId', docId)
-					.then(data => {
-						return res.status(SC.OK).json({
-							message: 'Document updated sucessfully!',
-							data: data
-						})
+				try {
+					const updatedDocument = await updateById(
+						prisma.document,
+						{ title },
+						'docId',
+						docId
+					)
+					const userData = await getById(
+						prisma.user,
+						'id',
+						updatedDocument.userId
+					)
+
+					loguser(
+						userData?.id!,
+						userData?.name!,
+						userData?.role!,
+						`Document updated successfully!`,
+						res
+					)
+
+					return res.status(SC.OK).json({
+						message: 'Document updated successfully!',
+						data: updatedDocument
 					})
-					.catch(err => {
-						logger(err, 'ERROR')
-						return res.status(SC.BAD_REQUEST).json({
-							error: 'Error while updating document'
-						})
+				} catch (err: any) {
+					logger(err, 'ERROR')
+					return res.status(SC.BAD_REQUEST).json({
+						error: 'Error while updating document'
 					})
+				}
+			} else {
+				return res.status(SC.BAD_REQUEST).json({
+					error: 'No file or title provided'
+				})
 			}
 		})
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		return res.status(SC.INTERNAL_SERVER_ERROR).json({
+			error: 'Internal server error'
+		})
 	} finally {
 		logger(`Update document API Called!`)
 	}
@@ -185,20 +239,25 @@ export const deleteDocument = async (
 ): Promise<any> => {
 	const docId = req.params.docId
 	try {
-		await deleteById(prisma.document, 'docId', docId)
-			.then(() => {
-				return res.status(SC.OK).json({
-					message: 'Document deleted sucessfully!'
-				})
-			})
-			.catch(err => {
-				logger(err, 'ERROR')
-				return res.status(SC.BAD_REQUEST).json({
-					error: 'Error while deleting document'
-				})
-			})
+		const data = await deleteById(prisma.document, 'docId', docId)
+		const userData = await getById(prisma.user, 'id', data.userId)
+
+		loguser(
+			userData?.id!,
+			userData?.name!,
+			userData?.role!,
+			`Document deleted successfully!`,
+			res
+		)
+
+		return res.status(SC.OK).json({
+			message: 'Document deleted successfully!'
+		})
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		return res.status(SC.BAD_REQUEST).json({
+			error: 'Error while deleting document'
+		})
 	} finally {
 		logger(`Delete document API Called!`)
 	}

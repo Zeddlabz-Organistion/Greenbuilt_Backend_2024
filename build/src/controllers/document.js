@@ -50,6 +50,7 @@ var statusCode_1 = require("../utils/statusCode");
 var uuid_1 = require("uuid");
 var lodash_1 = require("lodash");
 var crud_1 = require("../helpers/crud");
+var logUser_1 = require("../helpers/logUser");
 var s3 = new aws_sdk_1.default.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_ACCESS_SECRET_KEY,
@@ -117,6 +118,7 @@ var uploadDocument = function (req, res) { return __awaiter(void 0, void 0, void
                                                 }
                                             })
                                                 .then(function (USER) {
+                                                (0, logUser_1.loguser)(USER === null || USER === void 0 ? void 0 : USER.id, USER === null || USER === void 0 ? void 0 : USER.name, USER === null || USER === void 0 ? void 0 : USER.role, "Document uploaded sucessfully!", res);
                                                 return res.status(statusCode_1.statusCode.OK).json({
                                                     message: 'Document uploaded sucessfully!',
                                                     data: responseData,
@@ -158,146 +160,141 @@ var uploadDocument = function (req, res) { return __awaiter(void 0, void 0, void
 }); };
 exports.uploadDocument = uploadDocument;
 var updateDocument = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var docId, form, err_1;
+    var docId, form;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                docId = req.params.docId;
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                form = new formidable_1.default.IncomingForm();
-                return [4, form.parse(req, function (err, fields, _a) {
-                        var file = _a.file;
-                        return __awaiter(void 0, void 0, void 0, function () {
-                            var title;
-                            return __generator(this, function (_b) {
-                                switch (_b.label) {
-                                    case 0:
-                                        if (err) {
-                                            (0, logger_1.loggerUtil)(err, 'ERROR');
-                                            res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                                error: 'Problem with document'
-                                            });
-                                        }
-                                        title = fields.title;
-                                        if (!file) return [3, 1];
-                                        if (file.size > 3000000) {
-                                            res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                                error: 'File size should be less than 3 MB'
-                                            });
-                                        }
-                                        (0, sharp_1.default)(fs_1.default.readFileSync(file.filepath))
-                                            .resize(1000)
-                                            .toBuffer()
-                                            .then(function (doc) { return __awaiter(void 0, void 0, void 0, function () {
-                                            var data;
-                                            return __generator(this, function (_a) {
-                                                switch (_a.label) {
-                                                    case 0:
-                                                        data = {
-                                                            file: doc,
-                                                            fileName: file.originalFilename
-                                                        };
-                                                        if (!(0, lodash_1.isEmpty)(title))
-                                                            data.title = title;
-                                                        return [4, (0, crud_1.updateById)(index_1.prisma.document, data, 'docId', docId)
-                                                                .then(function (data) {
-                                                                return res.status(statusCode_1.statusCode.OK).json({
-                                                                    message: 'Document updated sucessfully!',
-                                                                    data: data
-                                                                });
-                                                            })
-                                                                .catch(function (err) {
-                                                                (0, logger_1.loggerUtil)(err, 'ERROR');
-                                                                return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                                                    error: 'Error while updating document'
-                                                                });
-                                                            })];
-                                                    case 1:
-                                                        _a.sent();
-                                                        return [2];
-                                                }
-                                            });
-                                        }); });
-                                        return [3, 4];
-                                    case 1:
-                                        if (!title) return [3, 4];
-                                        return [4, (0, crud_1.updateById)(index_1.prisma.document, { title: title }, 'docId', docId)
-                                                .then(function (data) {
-                                                return res.status(statusCode_1.statusCode.OK).json({
-                                                    message: 'Document updated sucessfully!',
-                                                    data: data
-                                                });
-                                            })
-                                                .catch(function (err) {
-                                                (0, logger_1.loggerUtil)(err, 'ERROR');
-                                                return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                                    error: 'Error while updating document'
-                                                });
-                                            })];
-                                    case 2: return [4, _b.sent()];
-                                    case 3:
-                                        _b.sent();
-                                        _b.label = 4;
-                                    case 4: return [2];
-                                }
-                            });
-                        });
-                    })];
-            case 2:
-                _a.sent();
-                return [3, 5];
-            case 3:
-                err_1 = _a.sent();
-                (0, logger_1.loggerUtil)(err_1, 'ERROR');
-                return [3, 5];
-            case 4:
-                (0, logger_1.loggerUtil)("Update document API Called!");
-                return [7];
-            case 5: return [2];
+        docId = req.params.docId;
+        try {
+            form = new formidable_1.default.IncomingForm();
+            form.parse(req, function (err, fields, files) { return __awaiter(void 0, void 0, void 0, function () {
+                var title, file, doc, data, updatedDocument, userData, err_1, updatedDocument, userData, err_2;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (err) {
+                                (0, logger_1.loggerUtil)(err, 'ERROR');
+                                return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                                        error: 'Problem with document'
+                                    })];
+                            }
+                            title = fields.title;
+                            file = files.file;
+                            if (!file) return [3, 7];
+                            if (file.size > 3000000) {
+                                return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                                        error: 'File size should be less than 3 MB'
+                                    })];
+                            }
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 5, , 6]);
+                            return [4, (0, sharp_1.default)(fs_1.default.readFileSync(file.filepath))
+                                    .resize(1000)
+                                    .toBuffer()];
+                        case 2:
+                            doc = _a.sent();
+                            data = {
+                                file: doc,
+                                fileName: file.originalFilename
+                            };
+                            if (title)
+                                data.title = title;
+                            return [4, (0, crud_1.updateById)(index_1.prisma.document, data, 'docId', docId)];
+                        case 3:
+                            updatedDocument = _a.sent();
+                            return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', updatedDocument.userId)];
+                        case 4:
+                            userData = _a.sent();
+                            (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Document updated successfully!", res);
+                            return [2, res.status(statusCode_1.statusCode.OK).json({
+                                    message: 'Document updated successfully!',
+                                    data: updatedDocument
+                                })];
+                        case 5:
+                            err_1 = _a.sent();
+                            (0, logger_1.loggerUtil)(err_1, 'ERROR');
+                            return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                                    error: 'Error while updating document'
+                                })];
+                        case 6: return [3, 14];
+                        case 7:
+                            if (!title) return [3, 13];
+                            _a.label = 8;
+                        case 8:
+                            _a.trys.push([8, 11, , 12]);
+                            return [4, (0, crud_1.updateById)(index_1.prisma.document, { title: title }, 'docId', docId)];
+                        case 9:
+                            updatedDocument = _a.sent();
+                            return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', updatedDocument.userId)];
+                        case 10:
+                            userData = _a.sent();
+                            (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Document updated successfully!", res);
+                            return [2, res.status(statusCode_1.statusCode.OK).json({
+                                    message: 'Document updated successfully!',
+                                    data: updatedDocument
+                                })];
+                        case 11:
+                            err_2 = _a.sent();
+                            (0, logger_1.loggerUtil)(err_2, 'ERROR');
+                            return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                                    error: 'Error while updating document'
+                                })];
+                        case 12: return [3, 14];
+                        case 13: return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                                error: 'No file or title provided'
+                            })];
+                        case 14: return [2];
+                    }
+                });
+            }); });
         }
+        catch (err) {
+            (0, logger_1.loggerUtil)(err, 'ERROR');
+            return [2, res.status(statusCode_1.statusCode.INTERNAL_SERVER_ERROR).json({
+                    error: 'Internal server error'
+                })];
+        }
+        finally {
+            (0, logger_1.loggerUtil)("Update document API Called!");
+        }
+        return [2];
     });
 }); };
 exports.updateDocument = updateDocument;
 var deleteDocument = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var docId, err_2;
+    var docId, data, userData, err_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 docId = req.params.docId;
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4, (0, crud_1.deleteById)(index_1.prisma.document, 'docId', docId)
-                        .then(function () {
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Document deleted sucessfully!'
-                        });
-                    })
-                        .catch(function (err) {
-                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                        return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                            error: 'Error while deleting document'
-                        });
-                    })];
+                _a.trys.push([1, 4, 5, 6]);
+                return [4, (0, crud_1.deleteById)(index_1.prisma.document, 'docId', docId)];
             case 2:
-                _a.sent();
-                return [3, 5];
+                data = _a.sent();
+                return [4, (0, crud_1.getById)(index_1.prisma.user, 'id', data.userId)];
             case 3:
-                err_2 = _a.sent();
-                (0, logger_1.loggerUtil)(err_2, 'ERROR');
-                return [3, 5];
+                userData = _a.sent();
+                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Document deleted successfully!", res);
+                return [2, res.status(statusCode_1.statusCode.OK).json({
+                        message: 'Document deleted successfully!'
+                    })];
             case 4:
+                err_3 = _a.sent();
+                (0, logger_1.loggerUtil)(err_3, 'ERROR');
+                return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                        error: 'Error while deleting document'
+                    })];
+            case 5:
                 (0, logger_1.loggerUtil)("Delete document API Called!");
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
 exports.deleteDocument = deleteDocument;
 var getDocumentById = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var docId, err_3;
+    var docId, err_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -327,8 +324,8 @@ var getDocumentById = function (req, res) { return __awaiter(void 0, void 0, voi
                 _a.sent();
                 return [3, 5];
             case 3:
-                err_3 = _a.sent();
-                (0, logger_1.loggerUtil)(err_3, 'ERROR');
+                err_4 = _a.sent();
+                (0, logger_1.loggerUtil)(err_4, 'ERROR');
                 return [3, 5];
             case 4:
                 (0, logger_1.loggerUtil)("Get document API Called!");
@@ -339,7 +336,7 @@ var getDocumentById = function (req, res) { return __awaiter(void 0, void 0, voi
 }); };
 exports.getDocumentById = getDocumentById;
 var getAllDocumentsByUser = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, err_4;
+    var userId, err_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -370,8 +367,8 @@ var getAllDocumentsByUser = function (req, res) { return __awaiter(void 0, void 
                 _a.sent();
                 return [3, 5];
             case 3:
-                err_4 = _a.sent();
-                (0, logger_1.loggerUtil)(err_4, 'ERROR');
+                err_5 = _a.sent();
+                (0, logger_1.loggerUtil)(err_5, 'ERROR');
                 return [3, 5];
             case 4:
                 (0, logger_1.loggerUtil)("Get user documents API Called!");

@@ -12,7 +12,7 @@ import {
 	getAllById,
 	getAll
 } from '../helpers/crud'
-
+import { loguser } from '../helpers/logUser'
 interface Asset {
 	assetId: string
 	name: string
@@ -45,11 +45,19 @@ export const createAsset = async (
 		assetId: uuid(),
 		userId
 	}
+	const userData = await getById(prisma.user, 'id', userId)
 	try {
 		await create(prisma.asset, data)
 			.then(data => {
+				loguser(
+					userData?.id!,
+					userData?.name!,
+					userData?.role!,
+					`Asset created successfully!`,
+					res
+				)
 				return res.status(SC.OK).json({
-					message: 'Asset created successfully!',
+					message: 'Asset created successfully by admin',
 					data
 				})
 			})
@@ -68,11 +76,20 @@ export const createAsset = async (
 
 export const bulkUpload = async (req: Request, res: Response): Promise<any> => {
 	const userId = +(req.params.userId || '0')
+	const userData = await getById(prisma.user, 'id', userId)
 	const assets: Asset[] = req.body.assets
 	const data = assets?.map(val => ({ ...val, assetId: uuid(), userId }))
 	try {
 		await createMany(prisma.asset, data)
 			.then(data => {
+				loguser(
+					userData?.id!,
+					userData?.name!,
+					userData?.role!,
+					`Assets upload in bulk successfully by admin`,
+					res
+				)
+
 				return res.status(SC.OK).json({
 					message: 'Assets upload in bulk successfully!',
 					data
@@ -98,21 +115,26 @@ export const updateAsset = async (
 	const assetId = req.params.assetId
 	const asset: Asset = req.body.asset
 	try {
-		await updateById(prisma.asset, asset, 'assetId', assetId)
-			.then(data => {
-				return res.status(SC.OK).json({
-					message: 'Asset updated successfully!',
-					data
-				})
-			})
-			.catch(err => {
-				logger(err, 'ERROR')
-				return res.status(SC.BAD_REQUEST).json({
-					error: 'Asset updation failed!'
-				})
-			})
+		const data = await updateById(prisma.asset, asset, 'assetId', assetId)
+		const userData = await getById(prisma.user, 'id', data.userId)
+
+		loguser(
+			userData?.id!,
+			userData?.name!,
+			userData?.role!,
+			`Asset updated successfully by admin`,
+			res
+		)
+
+		return res.status(SC.OK).json({
+			message: 'Asset updated successfully!',
+			data
+		})
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		return res.status(SC.BAD_REQUEST).json({
+			error: 'Asset updation failed!'
+		})
 	} finally {
 		logger(`Asset Update API Called!`)
 	}
@@ -124,20 +146,26 @@ export const deleteAsset = async (
 ): Promise<any> => {
 	const assetId = req.params.assetId
 	try {
-		await deleteById(prisma.asset, 'assetId', assetId)
-			.then(() => {
-				return res.status(SC.OK).json({
-					message: 'Asset deleted successfully!'
-				})
-			})
-			.catch(err => {
-				logger(err, 'ERROR')
-				return res.status(SC.BAD_REQUEST).json({
-					error: 'Asset deletion failed!'
-				})
-			})
+		const data = await deleteById(prisma.asset, 'assetId', assetId)
+
+		const userData = await getById(prisma.user, 'id', data.userId)
+
+		loguser(
+			userData?.id!,
+			userData?.name!,
+			userData?.role!,
+			`Asset deleted successfully by admin`,
+			res
+		)
+
+		return res.status(SC.OK).json({
+			message: 'Asset deleted successfully!'
+		})
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		return res.status(SC.BAD_REQUEST).json({
+			error: 'Asset deletion failed!'
+		})
 	} finally {
 		logger(`Asset Delete API Called!`)
 	}

@@ -64,6 +64,7 @@ var statusCode_1 = require("../utils/statusCode");
 var uuid_1 = require("uuid");
 var crud_2 = require("../helpers/crud");
 var lodash_1 = require("lodash");
+var logUser_1 = require("../helpers/logUser");
 var createMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userId, info, monthlyPlanData, data, finalData_1, queryObj, err_1;
     return __generator(this, function (_a) {
@@ -109,13 +110,23 @@ var createMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0
                                 case 0:
                                     if (!!val.length) return [3, 2];
                                     return [4, (0, crud_1.createMany)(index_1.prisma.montlyConsumptionPlan, finalData_1)
-                                            .then(function (count) {
-                                            res.status(statusCode_1.statusCode.OK).json({
-                                                message: 'Monthly consumption plan created sucessfully!',
-                                                count: count,
-                                                data: finalData_1
+                                            .then(function (count) { return __awaiter(void 0, void 0, void 0, function () {
+                                            var userData;
+                                            return __generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', count.userId)];
+                                                    case 1:
+                                                        userData = _a.sent();
+                                                        (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Monthly consumption plan created sucessfully!', res);
+                                                        res.status(statusCode_1.statusCode.OK).json({
+                                                            message: 'Monthly consumption plan created sucessfully!',
+                                                            count: count,
+                                                            data: finalData_1
+                                                        });
+                                                        return [2];
+                                                }
                                             });
-                                        })
+                                        }); })
                                             .catch(function (err) {
                                             (0, logger_1.loggerUtil)(err, 'ERROR');
                                             res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -177,9 +188,18 @@ var updateMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0
                             (val.thirdPartyPurchase || 0)
                     }
                 })
-                    .then(function (data) {
-                    console.log(data);
-                })
+                    .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                    var userData;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', data.userId)];
+                            case 1:
+                                userData = _a.sent();
+                                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Monthly Consumption Plan updated successfully.", res);
+                                return [2];
+                        }
+                    });
+                }); })
                     .catch(function (err) {
                     (0, logger_1.loggerUtil)(err, 'ERROR');
                     res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -202,142 +222,130 @@ var updateMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0
 }); };
 exports.updateMonthlyConsumptionPlan = updateMonthlyConsumptionPlan;
 var approveMonthlyConsumptionPlan = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var monthlyPlanId, err_2;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var monthlyPlanId, monthlyPlans, total_1, user, updatedUser, updatedPlans, userData, err_2;
+    var _a, _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
                 monthlyPlanId = req.params.monthlyPlanId;
-                _a.label = 1;
+                _c.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4, index_1.prisma.montlyConsumptionPlan
-                        .findMany({
-                        where: {
-                            monthlyPlanId: monthlyPlanId
-                        }
-                    })
-                        .then(function (monthlyPlan) { return __awaiter(void 0, void 0, void 0, function () {
-                        var total;
-                        var _a;
-                        return __generator(this, function (_b) {
-                            switch (_b.label) {
-                                case 0:
-                                    total = 0;
-                                    monthlyPlan === null || monthlyPlan === void 0 ? void 0 : monthlyPlan.forEach(function (data) { return (total += data.total || 0); });
-                                    return [4, index_1.prisma.user
-                                            .findFirst({
-                                            where: {
-                                                id: (_a = monthlyPlan[0]) === null || _a === void 0 ? void 0 : _a.userId
-                                            }
-                                        })
-                                            .then(function (user) { return __awaiter(void 0, void 0, void 0, function () {
-                                            var _a;
-                                            return __generator(this, function (_b) {
-                                                switch (_b.label) {
-                                                    case 0: return [4, index_1.prisma.user.update({
-                                                            where: {
-                                                                id: (_a = monthlyPlan[0]) === null || _a === void 0 ? void 0 : _a.userId
-                                                            },
-                                                            data: {
-                                                                points: ((user === null || user === void 0 ? void 0 : user.points) || 0) + total,
-                                                                totalPoints: ((user === null || user === void 0 ? void 0 : user.totalPoints) || 0) + total
-                                                            }
-                                                        })];
-                                                    case 1:
-                                                        _b.sent();
-                                                        return [2];
-                                                }
-                                            });
-                                        }); })
-                                            .then(function () { return __awaiter(void 0, void 0, void 0, function () {
-                                            return __generator(this, function (_a) {
-                                                switch (_a.label) {
-                                                    case 0: return [4, index_1.prisma.montlyConsumptionPlan
-                                                            .updateMany({
-                                                            where: {
-                                                                monthlyPlanId: monthlyPlanId
-                                                            },
-                                                            data: {
-                                                                isApproved: true
-                                                            }
-                                                        })
-                                                            .then(function (data) {
-                                                            res.status(statusCode_1.statusCode.OK).json({
-                                                                message: 'Monthly consumption plan has been approved sucessfully!',
-                                                                data: data
-                                                            });
-                                                        })
-                                                            .catch(function (err) {
-                                                            (0, logger_1.loggerUtil)(err, 'ERROR');
-                                                            res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                                                error: 'Error while approving monthly consumption plan with source type'
-                                                            });
-                                                        })];
-                                                    case 1:
-                                                        _a.sent();
-                                                        return [2];
-                                                }
-                                            });
-                                        }); })];
-                                case 1:
-                                    _b.sent();
-                                    return [2];
-                            }
-                        });
-                    }); })];
+                _c.trys.push([1, 6, 7, 8]);
+                return [4, index_1.prisma.montlyConsumptionPlan.findMany({
+                        where: { monthlyPlanId: monthlyPlanId }
+                    })];
             case 2:
-                _a.sent();
-                return [3, 5];
+                monthlyPlans = _c.sent();
+                if (!monthlyPlans.length) {
+                    return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
+                            message: 'Monthly consumption plan not found!'
+                        })];
+                }
+                total_1 = 0;
+                monthlyPlans.forEach(function (plan) {
+                    total_1 += plan.total || 0;
+                });
+                return [4, index_1.prisma.user.findFirst({
+                        where: { id: (_a = monthlyPlans[0]) === null || _a === void 0 ? void 0 : _a.userId }
+                    })];
             case 3:
-                err_2 = _a.sent();
-                (0, logger_1.loggerUtil)(err_2, 'ERROR');
-                return [3, 5];
+                user = _c.sent();
+                if (!user) {
+                    return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
+                            message: 'User not found!'
+                        })];
+                }
+                return [4, index_1.prisma.user.update({
+                        where: { id: (_b = monthlyPlans[0]) === null || _b === void 0 ? void 0 : _b.userId },
+                        data: {
+                            points: (user.points || 0) + total_1,
+                            totalPoints: (user.totalPoints || 0) + total_1
+                        }
+                    })];
             case 4:
-                (0, logger_1.loggerUtil)("Approve Monthly Consumption Plan with Source API Called!");
+                updatedUser = _c.sent();
+                return [4, index_1.prisma.montlyConsumptionPlan.updateMany({
+                        where: { monthlyPlanId: monthlyPlanId },
+                        data: { isApproved: true }
+                    })];
+            case 5:
+                updatedPlans = _c.sent();
+                userData = {
+                    id: updatedUser.id,
+                    name: updatedUser.name,
+                    role: updatedUser.role
+                };
+                (0, logUser_1.loguser)(userData.id, userData.name, userData.role, "Monthly consumption plan approved with total points: " + total_1, res);
+                res.status(statusCode_1.statusCode.OK).json({
+                    message: 'Monthly consumption plan has been approved successfully!',
+                    data: updatedPlans
+                });
+                return [3, 8];
+            case 6:
+                err_2 = _c.sent();
+                (0, logger_1.loggerUtil)(err_2, 'ERROR');
+                res.status(statusCode_1.statusCode.INTERNAL_SERVER_ERROR).json({
+                    error: 'Failed to approve monthly consumption plan!'
+                });
+                return [3, 8];
+            case 7:
+                (0, logger_1.loggerUtil)('Approve Monthly Consumption Plan API Called!');
                 return [7];
-            case 5: return [2];
+            case 8: return [2];
         }
     });
 }); };
 exports.approveMonthlyConsumptionPlan = approveMonthlyConsumptionPlan;
 var deleteByMonthlyConsumptionPlanId = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var monthlyPlanId, err_3;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var monthlyPlanId, monthlyPlans, userData, deleteResult, err_3;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
                 monthlyPlanId = req.params.monthlyPlanId;
-                _a.label = 1;
+                _b.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4, index_1.prisma.montlyConsumptionPlan
-                        .deleteMany({
-                        where: {
-                            monthlyPlanId: monthlyPlanId
-                        }
-                    })
-                        .then(function (data) {
-                        res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Monthly consumption plan deleted sucessfully!',
-                            data: data
-                        });
-                    })
-                        .catch(function (err) {
-                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                        res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                            error: 'Error while deleting monthly consumption plan'
-                        });
+                _b.trys.push([1, 5, 6, 7]);
+                return [4, index_1.prisma.montlyConsumptionPlan.findMany({
+                        where: { monthlyPlanId: monthlyPlanId }
                     })];
             case 2:
-                _a.sent();
-                return [3, 5];
+                monthlyPlans = _b.sent();
+                if (!monthlyPlans.length) {
+                    return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
+                            message: 'Monthly consumption plan not found!'
+                        })];
+                }
+                return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', (_a = monthlyPlans[0]) === null || _a === void 0 ? void 0 : _a.userId)];
             case 3:
-                err_3 = _a.sent();
-                (0, logger_1.loggerUtil)(err_3, 'ERROR');
-                return [3, 5];
+                userData = _b.sent();
+                if (!userData) {
+                    return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
+                            message: 'User not found!'
+                        })];
+                }
+                return [4, index_1.prisma.montlyConsumptionPlan.deleteMany({
+                        where: { monthlyPlanId: monthlyPlanId }
+                    })];
             case 4:
-                (0, logger_1.loggerUtil)("Delete By Monthly Consumption Plan Id API Called!");
+                deleteResult = _b.sent();
+                (0, logUser_1.loguser)(userData.id, userData.name, userData.role, "Monthly consumption plan deleted successfully!", res);
+                res.status(statusCode_1.statusCode.OK).json({
+                    message: 'Monthly consumption plan deleted successfully!',
+                    data: deleteResult
+                });
+                return [3, 7];
+            case 5:
+                err_3 = _b.sent();
+                (0, logger_1.loggerUtil)(err_3, 'ERROR');
+                res.status(statusCode_1.statusCode.INTERNAL_SERVER_ERROR).json({
+                    error: 'Error while deleting monthly consumption plan'
+                });
+                return [3, 7];
+            case 6:
+                (0, logger_1.loggerUtil)('Delete By Monthly Consumption Plan Id API Called!');
                 return [7];
-            case 5: return [2];
+            case 7: return [2];
         }
     });
 }); };
@@ -352,12 +360,22 @@ var deleteMonthlyConsumptionById = function (req, res) { return __awaiter(void 0
             case 1:
                 _a.trys.push([1, 3, 4, 5]);
                 return [4, (0, crud_2.deleteById)(index_1.prisma.montlyConsumptionPlan, 'id', id)
-                        .then(function (data) {
-                        res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Monthly consumption plan deleted sucessfully!',
-                            data: data
+                        .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
+                        var userData;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', data.userId)];
+                                case 1:
+                                    userData = _a.sent();
+                                    (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Monthly consumption plan deleted sucessfully!", res);
+                                    res.status(statusCode_1.statusCode.OK).json({
+                                        message: 'Monthly consumption plan deleted sucessfully!',
+                                        data: data
+                                    });
+                                    return [2];
+                            }
                         });
-                    })
+                    }); })
                         .catch(function (err) {
                         (0, logger_1.loggerUtil)(err, 'ERROR');
                         res.status(statusCode_1.statusCode.BAD_REQUEST).json({
@@ -441,9 +459,9 @@ var getAllByMonthlyConsumptionId = function (req, res) { return __awaiter(void 0
                             });
                         }
                         else {
-                            var total_1 = 0;
+                            var total_2 = 0;
                             data.forEach(function (val, inx) {
-                                total_1 += val === null || val === void 0 ? void 0 : val.total;
+                                total_2 += val === null || val === void 0 ? void 0 : val.total;
                                 if (inx === 0) {
                                     finalObj.monthlyPlanId = val.monthlyPlanId;
                                     finalObj.month = val.month;
@@ -481,7 +499,7 @@ var getAllByMonthlyConsumptionId = function (req, res) { return __awaiter(void 0
                             });
                             res.status(statusCode_1.statusCode.OK).json({
                                 message: 'Monthly consumption plans fetched sucessfully!',
-                                data: __assign(__assign({}, finalObj), { total: total_1 })
+                                data: __assign(__assign({}, finalObj), { total: total_2 })
                             });
                         }
                     })
@@ -530,7 +548,7 @@ var getAllMonthlyConsumptionByUserId = function (req, res) { return __awaiter(vo
                         else {
                             var finalData_2 = [];
                             var obj_1 = {};
-                            var total_2 = 0;
+                            var total_3 = 0;
                             (0, lodash_1.forIn)(reducedData, function (val) {
                                 var tempObj = {};
                                 var monthlyPlans = [];
@@ -553,14 +571,14 @@ var getAllMonthlyConsumptionByUserId = function (req, res) { return __awaiter(vo
                                         isTrash: data === null || data === void 0 ? void 0 : data.isTrash,
                                         sourceType: data === null || data === void 0 ? void 0 : data.sourceType
                                     });
-                                    total_2 += data === null || data === void 0 ? void 0 : data.total;
+                                    total_3 += data === null || data === void 0 ? void 0 : data.total;
                                 });
-                                tempObj.toal = total_2;
+                                tempObj.toal = total_3;
                                 tempObj.monthlyPlans = monthlyPlans;
                                 obj_1 = __assign(__assign({}, obj_1), tempObj);
                                 finalData_2.push(obj_1);
                                 monthlyPlans = [];
-                                total_2 = 0;
+                                total_3 = 0;
                             });
                             res.status(statusCode_1.statusCode.OK).json({
                                 message: 'Monthly consumption plans fetched sucessfully!',
@@ -610,7 +628,7 @@ var getAllMonthlyConsumption = function (req, res) { return __awaiter(void 0, vo
                 else {
                     var finalData_3 = [];
                     var obj_2 = {};
-                    var total_3 = 0;
+                    var total_4 = 0;
                     (0, lodash_1.forIn)(reducedData, function (val) {
                         var tempObj = {};
                         var monthlyPlans = [];
@@ -635,14 +653,14 @@ var getAllMonthlyConsumption = function (req, res) { return __awaiter(void 0, vo
                                 isTrash: data === null || data === void 0 ? void 0 : data.isTrash,
                                 sourceType: data === null || data === void 0 ? void 0 : data.sourceType
                             });
-                            total_3 += data === null || data === void 0 ? void 0 : data.total;
+                            total_4 += data === null || data === void 0 ? void 0 : data.total;
                         });
-                        tempObj.toal = total_3;
+                        tempObj.toal = total_4;
                         tempObj.monthlyPlans = monthlyPlans;
                         obj_2 = __assign(__assign({}, obj_2), tempObj);
                         finalData_3.push(obj_2);
                         monthlyPlans = [];
-                        total_3 = 0;
+                        total_4 = 0;
                     });
                     res.status(statusCode_1.statusCode.OK).json({
                         message: 'Monthly consumption plans fetched sucessfully!',

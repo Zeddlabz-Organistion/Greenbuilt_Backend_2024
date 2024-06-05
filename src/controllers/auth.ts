@@ -9,6 +9,7 @@ import { statusCode as SC } from '../utils/statusCode'
 import { Gender } from '../@types/enum'
 import { mailer } from '../helpers/mailer'
 import { loguser } from '../helpers/logUser'
+import { getById } from '../helpers/crud'
 
 export const signup = async (req: Request, res: Response): Promise<any> => {
 	const errors = validate(req) || []
@@ -54,7 +55,7 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
 		logger(`Sign up API called by user - ${email}`)
 	}
 }
-
+// login
 export const signin = async (req: Request, res: Response): Promise<any> => {
 	const errors = validate(req) || []
 	if (!errors.isEmpty()) {
@@ -145,7 +146,13 @@ export const update = async (req: Request, res: Response): Promise<any> => {
 				data: reqBody
 			})
 			.then(user => {
-				loguser(user.id, user.name, user.role!, 'User Updated Successfully', res)
+				loguser(
+					user.id,
+					user.name,
+					user.role!,
+					'User Updated Successfully',
+					res
+				)
 				return res.status(SC.OK).json({
 					message: 'User Updated Successfully',
 					data: user
@@ -170,6 +177,8 @@ export const approveCorporateUser = async (
 ): Promise<any> => {
 	try {
 		const userId = +(req.params.userId || '0')
+		const userData = await getById(prisma.user, 'id', userId)
+
 		await prisma.user
 			.update({
 				where: {
@@ -416,6 +425,13 @@ export const approveCorporateUser = async (
 					'',
 					res
 				)
+				loguser(
+					userData?.id!,
+					userData?.name!,
+					userData?.role!,
+					`Coporate User has been Approved Successfully`,
+					res
+				)
 				return res.status(SC.OK).json({
 					message: 'Coporate User has been Approved Successfully',
 					data: user
@@ -440,6 +456,7 @@ export const updateUserPoints = async (
 ): Promise<any> => {
 	try {
 		const userId = +(req.params.userId || '0')
+		const userData = await getById(prisma.user, 'id', userId)
 		const points =
 			typeof req.body.points === 'string'
 				? +req.body.points
@@ -462,6 +479,13 @@ export const updateUserPoints = async (
 						}
 					})
 					.then(data => {
+						loguser(
+							userData?.id!,
+							userData?.name!,
+							userData?.role!,
+							`User points updated by ${data.points} and total points is ${data.totalPoints}`,
+							res
+						)
 						return res.status(SC.OK).json({
 							message: 'User points updated successfully!',
 							data

@@ -29,19 +29,14 @@ interface Product {
 
 export const createProduct = async (req: any, res: Response): Promise<any> => {
 	const userId = req.auth._id
-	// console.log("this is userid",userId);
 	const product: Product = req.body.product
-	// console.log("this is product",req.body);
 	const data = {
 		...product,
 		productId: uuid(),
 		userId
 	}
-	// console.log("this is data",data);
 	try {
-		const userData = await prisma.user.findUnique({
-			where: { id: userId }
-		})
+		const userData = await getById(prisma.user, 'id', userId)
 		await prisma.product
 			.findMany({
 				where: { userId: userId }
@@ -122,11 +117,9 @@ export const bulkUpload = async (req: any, res: Response): Promise<any> => {
 	const userId = req.auth._id
 	const products: Product[] = req.body.products
 	const data = products?.map(val => ({ ...val, productId: uuid(), userId }))
-	const titlesWithQuotes = data.map(item => `'${item.title}'`).join(", ");
+	const titlesWithQuotes = data.map(item => `'${item.title}'`).join(', ')
 	try {
-		const userData = await prisma.user.findUnique({
-			where: { id: userId }
-		})
+		const userData = await getById(prisma.user, 'id', userId)
 		await createMany(prisma.product, data)
 			.then(data => {
 				loguser(
@@ -154,16 +147,11 @@ export const bulkUpload = async (req: any, res: Response): Promise<any> => {
 	}
 }
 
-export const deleteProduct = async (
-	req: any,
-	res: Response
-): Promise<any> => {
+export const deleteProduct = async (req: any, res: Response): Promise<any> => {
 	const userId = req.auth._id
 	const productId = req.params.productId
 	try {
-		const userData = await prisma.user.findUnique({
-			where: { id: userId }
-		})
+		const userData = await getById(prisma.user, 'id', userId)
 		// console.log("this is userdata",userData);
 		await getById(prisma.product, 'productId', productId)
 			.then(async product => {
@@ -311,6 +299,14 @@ export const approveProduct = async (
 	try {
 		await updateById(prisma.product, data, 'productId', productId).then(
 			async data => {
+				const userData = await getById(prisma.user, 'id', data.userId)
+				loguser(
+					userData?.id!,
+					userData?.name!,
+					userData?.role!,
+					`Product - ${data.title} has been approved by admin`,
+					res
+				)
 				await prisma.notification
 					.create({
 						data: {
@@ -361,7 +357,15 @@ export const updateProductPoints = async (
 					points: points
 				}
 				await updateById(prisma.product, data, 'productId', product?.productId)
-					.then(data => {
+					.then(async data => {
+						const userData = await getById(prisma.user, 'id', data.userId)
+						loguser(
+							userData?.id!,
+							userData?.name!,
+							userData?.role!,
+							`Product points updated successfully by admin`,
+							res
+						)
 						return res.status(SC.OK).json({
 							message: 'Product updated successfully!',
 							data

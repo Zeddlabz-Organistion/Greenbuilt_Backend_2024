@@ -16,16 +16,16 @@ powerConsumptionRoute.post(
 	'/power-consumption/create',
 	isCorporate,
 	createEnergyConsumption
-)
+) // loguser data
 powerConsumptionRoute.put(
 	'/power-consumption/update/:powerConsumptionId',
 	updateEnergyConsumption
-)
+) // loguser data
 
 powerConsumptionRoute.delete(
 	'/power-consumption/delete/:powerConsumptionId',
 	deletePowerConsumption
-)
+) // loguser data
 powerConsumptionRoute.get(
 	'/power-consumption/get/:powerConsumptionId',
 	getPowerConsumptionById
@@ -39,6 +39,6 @@ powerConsumptionRoute.post(
 	'/power-consumption/approve/:powerConsumptionId',
 	isAdmin,
 	approvePowerConsumption
-)
+) // loguser data
 
 export { powerConsumptionRoute }
