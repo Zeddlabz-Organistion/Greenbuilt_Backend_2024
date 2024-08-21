@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-import AWS from 'aws-sdk'
 import formidable from 'formidable'
 import fs from 'fs'
 import sharp from 'sharp'
@@ -8,6 +7,7 @@ import { loggerUtil as logger } from '../utils/logger'
 import { statusCode as SC } from '../utils/statusCode'
 import { v4 as uuid } from 'uuid'
 import { isEmpty } from 'lodash'
+import { getObjectUrl } from '../helpers/awss3'
 import {
 	create,
 	deleteById,
@@ -15,107 +15,54 @@ import {
 	updateById
 	// getAllById
 } from '../helpers/crud'
+import { getSignedUrlForDocs } from '../helpers/awss3'
 import { loguser } from '../helpers/logUser'
-const s3 = new AWS.S3({
-	accessKeyId: process.env.AWS_ACCESS_KEY,
-	secretAccessKey: process.env.AWS_ACCESS_SECRET_KEY,
-	region: 'ap-south-1'
-})
 
-export const uploadDocument = async (
-	req: Request,
-	res: Response
-): Promise<any> => {
-	const userId = +(req.params.userId || '0')
+export const uploadDocument = async (req: any, res: Response): Promise<any> => {
+	const userId = Number(req.params.userId || '0')
+
 	try {
-		const form = new formidable.IncomingForm()
-		form.parse(req, (err: any, fields: any, { file }: any) => {
-			if (err) {
-				logger(err, 'ERROR')
-				res.status(SC.BAD_REQUEST).json({
-					error: 'Problem with document'
-				})
-			}
-			if (file.size > 3000000) {
-				res.status(SC.BAD_REQUEST).json({
-					error: 'File size should be less than 3 MB'
-				})
-			} else {
-				const { title } = fields
-				console.log(file)
-				const dataS3 = {
-					Bucket: 'green-built-documents',
-					Key: `${title}-${userId}`,
-					Body: fs.createReadStream(file.filepath),
-					ContentType: file.mimetype
-				}
-				const data = {
-					title: `${title}`,
-					docId: uuid(),
-					uploadDate: new Date(),
-					fileName: file.originalFilename,
-					userId,
-					location: ''
-				}
-				logger('Hello world')
-				s3.upload(dataS3, (err: any, response: any) => {
-					if (err) {
-						logger('ERROR')
-						logger(err)
-						return res.status(SC.BAD_REQUEST).json({
-							error: 'Error while uploading document'
-						})
-					} else {
-						logger('File Uploaded Successfully')
-						data.location = response.Location
-						create(prisma.document, data)
-							.then(async responseData => {
-								await prisma.user
-									.update({
-										where: {
-											id: userId
-										},
-										data: {
-											documentArray: { push: response.Location }
-										}
-									})
-									.then(USER => {
-										loguser(
-											USER?.id!,
-											USER?.name!,
-											USER?.role!,
-											`Document uploaded sucessfully!`,
-											res
-										)
+		const { fileName, title } = req.body
+		const { url, key } = await getSignedUrlForDocs('document', fileName, userId)
+		const data = {
+			title: title,
+			docId: uuid(),
+			uploadDate: new Date(),
+			fileName: fileName,
+			userId: userId,
+			location: key
+		}
 
-										return res.status(SC.OK).json({
-											message: 'Document uploaded sucessfully!',
-											data: responseData,
-											USER
-										})
-									})
-									.catch(err => {
-										logger(err, 'ERROR')
-										res.status(SC.BAD_REQUEST).json({
-											error: 'Error while uploading Document'
-										})
-									})
-							})
-							.catch(err => {
-								logger(err, 'ERROR')
-								return res.status(SC.BAD_REQUEST).json({
-									error: 'Error while uploading document'
-								})
-							})
-					}
-					return
-				})
+		try {
+			await create(prisma.document, data)
+			const user = await prisma.user.update({
+				where: { id: userId },
+				data: { documentArray: { push: key } }
+			})
+			loguser(user.id, user.name, user.role!, 'Document upload initiated', res)
+			return res.status(200).json({
+				message: 'Signed URL generated successfully',
+				url
+			})
+		} catch (updateError) {
+			if (updateError instanceof Error) {
+				logger(updateError.message, 'ERROR')
+			} else {
+				logger('Unknown error during document update', 'ERROR')
 			}
-		})
-	} catch (err: any) {
-		logger(err, 'ERROR')
+			return res
+				.status(400)
+				.json({ error: 'Error while updating document information' })
+		}
+	} catch (err) {
+		if (err instanceof Error) {
+			logger(err.message, 'ERROR')
+		} else {
+			logger('Unknown error during signed URL generation', 'ERROR')
+		}
+		return res.status(500).json({ error: 'Internal server error' })
 	} finally {
-		logger(`Upload document API Called!`)
+		logger('Upload document API Called!')
 	}
 }
 
@@ -259,27 +206,26 @@ export const getDocumentById = async (
 	res: Response
 ): Promise<any> => {
 	const docId = req.params.docId
+
 	try {
-		await getById(prisma.document, 'docId', docId)
-			.then(data => {
-				if (isEmpty(data)) {
-					return res.status(SC.NOT_FOUND).json({
-						message: 'No document was found!'
-					})
-				}
-				return res.status(SC.OK).json({
-					message: 'Document fetched sucessfully!',
-					data: data
-				})
+		const data = await getById(prisma.document, 'docId', docId)
+
+		if (isEmpty(data)) {
+			return res.status(SC.NOT_FOUND).json({
+				message: 'No document was found!'
 			})
-			.catch(err => {
-				logger(err, 'ERROR')
-				return res.status(SC.BAD_REQUEST).json({
-					error: 'Error while fetching document'
-				})
-			})
+		}
+		const url = await getObjectUrl(data.location)
+		data.url = url
+		return res.status(SC.OK).json({
+			message: 'Document fetched successfully!',
+			data: data
+		})
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		return res.status(SC.BAD_REQUEST).json({
+			error: 'Error while fetching document'
+		})
 	} finally {
 		logger(`Get document API Called!`)
 	}

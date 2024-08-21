@@ -1,7 +1,7 @@
 import { getAllByQuery } from './../helpers/crud'
 import { Request, Response } from 'express'
 import formidable from 'formidable'
-import AWS from 'aws-sdk'
+import { getSignedUrlForDocs } from '../helpers/awss3'
 import fs from 'fs'
 import sharp from 'sharp'
 import { prisma } from '../prisma/index'
@@ -16,12 +16,7 @@ import {
 	getById,
 	updateById
 } from '../helpers/crud'
-
-const s3 = new AWS.S3({
-	accessKeyId: process.env.AWS_ACCESS_KEY,
-	secretAccessKey: process.env.AWS_ACCESS_SECRET_KEY,
-	region: 'ap-south-1'
-})
+import { getObjectUrl } from '../helpers/awss3'
 
 export const createEnergyConsumption = async (
 	req: any,
@@ -29,136 +24,91 @@ export const createEnergyConsumption = async (
 ): Promise<any> => {
 	const userId = +(req.auth._id || '0')
 	try {
-		const form = new formidable.IncomingForm()
-		await form.parse(req, (err: any, fields: any, { file }: any) => {
-			prisma.montlyConsumptionPlan
-				.findMany({
-					where: {
-						userId: userId,
-						month: +fields.month,
-						year: +fields.year
-					}
-				})
-				.then(async monthlyPlans => {
-					if (monthlyPlans.length) {
-						if (err) {
-							logger(err, 'ERROR')
-							res.status(SC.BAD_REQUEST).json({
-								error: 'Problem with document'
-							})
-						}
-						if (file.size > 3000000) {
-							res.status(SC.BAD_REQUEST).json({
-								error: 'File size should be less than 3 MB'
-							})
-						} else {
-							const {
-								totalConsumption,
-								totalGreenConsumption,
-								date,
-								month,
-								year,
-								fullDate
-							} = fields
-							console.log({
-								typeofs: {
-									month: typeof month,
-									year: typeof year,
-									date: typeof date,
-									fullDate: typeof fullDate
-								}
-							})
-							sharp(fs.readFileSync(file.filepath))
-								.resize(1000)
-								.toBuffer()
-								.then(async doc => {
-									const dataS3 = {
-										Bucket: 'green-built-documents',
-										Key: `ebBil-${userId}-${date}-${month}-${year}-`,
-										Body: doc,
-										ContentType: file.mimetype
-									}
-									const dataPrisma = {
-										date: +date || new Date().getDate(),
-										month: +month || new Date().getMonth() + 1,
-										year: +year || new Date().getFullYear(),
-										fullDate: fullDate ? new Date(fullDate) : new Date(),
-										totalConsumption,
-										totalGreenConsumption,
-										userId,
-										ebBillLocation: ''
-									}
-									const queryObj = {
-										month: +month,
-										year: +year,
-										userId
-									}
-									logger('Hello world')
-									s3.upload(dataS3, (err: any, response: any) => {
-										if (err) {
-											logger('ERROR')
-											logger(err)
-											return res.status(SC.BAD_REQUEST).json({
-												error: 'Error while uploading document'
-											})
-										} else {
-											logger('File Uploaded Successfully')
-											dataPrisma.ebBillLocation = response.Location
-											getAllByQuery(prisma.powerConsumption, queryObj).then(
-												async val => {
-													if (!val.length) {
-														await create(prisma.powerConsumption, dataPrisma)
-															.then(async data => {
-																const userData = await getById(
-																	prisma.user,
-																	'id',
-																	userId
-																)
+		const {
+			fileName,
+			totalConsumption,
+			totalGreenConsumption,
+			date,
+			month,
+			year,
+			fullDate
+		} = req.body
 
-																loguser(
-																	userData?.id!,
-																	userData?.name!,
-																	userData?.role!,
-																	`Power consumption data created sucessfully!`,
-																	res
-																)
-																return res.status(SC.OK).json({
-																	message:
-																		'Power consumption data created sucessfully!',
-																	data: data
-																})
-															})
-															.catch(err => {
-																logger(err, 'ERROR')
-																return res.status(SC.BAD_REQUEST).json({
-																	error:
-																		'Error while creating Power consumption data'
-																})
-															})
-													} else {
-														res.status(SC.BAD_REQUEST).json({
-															error:
-																'Power consumption data for this month is already present for the user!'
-														})
-													}
-												}
-											)
-										}
-										return
-									})
-								})
-						}
-					} else {
-						res
-							.status(SC.BAD_REQUEST)
-							.json({ error: 'No Monthly Plan Found for this month.' })
-					}
-				})
+		const existingData = await prisma.montlyConsumptionPlan.findMany({
+			where: {
+				userId: userId,
+				month: +month,
+				year: +year
+			}
 		})
+
+		if (existingData.length) {
+			const { url, key } = await getSignedUrlForDocs(
+				'PowerConsumption',
+				fileName,
+				userId
+			)
+			const dataPrisma = {
+				date: +date || new Date().getDate(),
+				month: +month || new Date().getMonth() + 1,
+				year: +year || new Date().getFullYear(),
+				fullDate: fullDate ? new Date(fullDate) : new Date(),
+				totalConsumption,
+				totalGreenConsumption,
+				userId,
+				ebBillLocation: '',
+				location: key
+			}
+
+			const queryObj = {
+				month: +month,
+				year: +year,
+				userId
+			}
+
+			const existingRecord = await getAllByQuery(
+				prisma.powerConsumption,
+				queryObj
+			)
+
+			if (existingRecord.length === 0) {
+				const newRecord = await create(prisma.powerConsumption, dataPrisma)
+
+				if (newRecord) {
+					const userData = await getById(prisma.user, 'id', userId)
+
+					loguser(
+						userData?.id!,
+						userData?.name!,
+						userData?.role!,
+						'Power consumption data created successfully!',
+						newRecord
+					)
+
+					return res.status(SC.OK).json({
+						message: 'Power consumption data created successfully!',
+						data: newRecord,
+						url
+					})
+				}
+			} else {
+				return res.status(SC.BAD_REQUEST).json({
+					error:
+						'Power consumption data for this month is already present for the user!'
+				})
+			}
+		} else {
+			return res
+				.status(SC.BAD_REQUEST)
+				.json({ error: 'No Monthly Plan Found for this month.' })
+		}
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		return res.status(SC.BAD_REQUEST).json({
+			error: 'Error while creating Power consumption data'
+		})
 	} finally {
-		logger(`Create Power Consumption API Called!`)
+		logger('Create Power Consumption API Called!')
 	}
 }
 
@@ -363,29 +313,31 @@ export const getPowerConsumptionById = async (
 	res: Response
 ): Promise<any> => {
 	const powerConsumptionId = +(req.params.powerConsumptionId || '0')
+
 	try {
-		await getById(prisma.powerConsumption, 'id', powerConsumptionId)
-			.then(data => {
-				if (isEmpty(data)) {
-					return res.status(SC.NOT_FOUND).json({
-						message: 'Power consumption data was not found!'
-					})
-				}
-				return res.status(SC.OK).json({
-					message: 'Power consumption data fetched sucessfully!',
-					data: data
-				})
+		const data = await getById(
+			prisma.powerConsumption,
+			'id',
+			powerConsumptionId
+		)
+		if (isEmpty(data)) {
+			return res.status(SC.NOT_FOUND).json({
+				message: 'Power consumption data was not found!'
 			})
-			.catch(err => {
-				logger(err, 'ERROR')
-				return res.status(SC.BAD_REQUEST).json({
-					error: 'Error while fetching Power consumption data'
-				})
-			})
+		}
+		const url = await getObjectUrl(data.location)
+		data.url = url
+		return res.status(SC.OK).json({
+			message: 'Power consumption data fetched successfully!',
+			data: data
+		})
 	} catch (err: any) {
 		logger(err, 'ERROR')
+		return res.status(SC.BAD_REQUEST).json({
+			error: 'Error while fetching power consumption data'
+		})
 	} finally {
-		logger(`Get Power consumption API Called!`)
+		logger('Get Power consumption API Called!')
 	}
 }
 

@@ -53,7 +53,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllPowerConsumption = exports.getAllPowerConsumptionByUser = exports.getPowerConsumptionById = exports.deletePowerConsumption = exports.approvePowerConsumption = exports.updateEnergyConsumption = exports.createEnergyConsumption = void 0;
 var crud_1 = require("./../helpers/crud");
 var formidable_1 = __importDefault(require("formidable"));
-var aws_sdk_1 = __importDefault(require("aws-sdk"));
+var awss3_1 = require("../helpers/awss3");
 var fs_1 = __importDefault(require("fs"));
 var sharp_1 = __importDefault(require("sharp"));
 var index_1 = require("../prisma/index");
@@ -62,162 +62,82 @@ var statusCode_1 = require("../utils/statusCode");
 var lodash_1 = require("lodash");
 var logUser_1 = require("../helpers/logUser");
 var crud_2 = require("../helpers/crud");
-var s3 = new aws_sdk_1.default.S3({
-    accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_ACCESS_SECRET_KEY,
-    region: 'ap-south-1'
-});
+var awss3_2 = require("../helpers/awss3");
 var createEnergyConsumption = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, form, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var userId, _a, fileName, totalConsumption, totalGreenConsumption, date, month, year, fullDate, existingData, _b, url, key, dataPrisma, queryObj, existingRecord, newRecord, userData, err_1;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
                 userId = +(req.auth._id || '0');
-                _a.label = 1;
+                _c.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                form = new formidable_1.default.IncomingForm();
-                return [4, form.parse(req, function (err, fields, _a) {
-                        var file = _a.file;
-                        index_1.prisma.montlyConsumptionPlan
-                            .findMany({
-                            where: {
-                                userId: userId,
-                                month: +fields.month,
-                                year: +fields.year
-                            }
-                        })
-                            .then(function (monthlyPlans) { return __awaiter(void 0, void 0, void 0, function () {
-                            var totalConsumption_1, totalGreenConsumption_1, date_1, month_1, year_1, fullDate_1;
-                            return __generator(this, function (_a) {
-                                if (monthlyPlans.length) {
-                                    if (err) {
-                                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                                        res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                            error: 'Problem with document'
-                                        });
-                                    }
-                                    if (file.size > 3000000) {
-                                        res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                            error: 'File size should be less than 3 MB'
-                                        });
-                                    }
-                                    else {
-                                        totalConsumption_1 = fields.totalConsumption, totalGreenConsumption_1 = fields.totalGreenConsumption, date_1 = fields.date, month_1 = fields.month, year_1 = fields.year, fullDate_1 = fields.fullDate;
-                                        console.log({
-                                            typeofs: {
-                                                month: typeof month_1,
-                                                year: typeof year_1,
-                                                date: typeof date_1,
-                                                fullDate: typeof fullDate_1
-                                            }
-                                        });
-                                        (0, sharp_1.default)(fs_1.default.readFileSync(file.filepath))
-                                            .resize(1000)
-                                            .toBuffer()
-                                            .then(function (doc) { return __awaiter(void 0, void 0, void 0, function () {
-                                            var dataS3, dataPrisma, queryObj;
-                                            return __generator(this, function (_a) {
-                                                dataS3 = {
-                                                    Bucket: 'green-built-documents',
-                                                    Key: "ebBil-" + userId + "-" + date_1 + "-" + month_1 + "-" + year_1 + "-",
-                                                    Body: doc,
-                                                    ContentType: file.mimetype
-                                                };
-                                                dataPrisma = {
-                                                    date: +date_1 || new Date().getDate(),
-                                                    month: +month_1 || new Date().getMonth() + 1,
-                                                    year: +year_1 || new Date().getFullYear(),
-                                                    fullDate: fullDate_1 ? new Date(fullDate_1) : new Date(),
-                                                    totalConsumption: totalConsumption_1,
-                                                    totalGreenConsumption: totalGreenConsumption_1,
-                                                    userId: userId,
-                                                    ebBillLocation: ''
-                                                };
-                                                queryObj = {
-                                                    month: +month_1,
-                                                    year: +year_1,
-                                                    userId: userId
-                                                };
-                                                (0, logger_1.loggerUtil)('Hello world');
-                                                s3.upload(dataS3, function (err, response) {
-                                                    if (err) {
-                                                        (0, logger_1.loggerUtil)('ERROR');
-                                                        (0, logger_1.loggerUtil)(err);
-                                                        return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                                            error: 'Error while uploading document'
-                                                        });
-                                                    }
-                                                    else {
-                                                        (0, logger_1.loggerUtil)('File Uploaded Successfully');
-                                                        dataPrisma.ebBillLocation = response.Location;
-                                                        (0, crud_1.getAllByQuery)(index_1.prisma.powerConsumption, queryObj).then(function (val) { return __awaiter(void 0, void 0, void 0, function () {
-                                                            return __generator(this, function (_a) {
-                                                                switch (_a.label) {
-                                                                    case 0:
-                                                                        if (!!val.length) return [3, 2];
-                                                                        return [4, (0, crud_2.create)(index_1.prisma.powerConsumption, dataPrisma)
-                                                                                .then(function (data) { return __awaiter(void 0, void 0, void 0, function () {
-                                                                                var userData;
-                                                                                return __generator(this, function (_a) {
-                                                                                    switch (_a.label) {
-                                                                                        case 0: return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
-                                                                                        case 1:
-                                                                                            userData = _a.sent();
-                                                                                            (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, "Power consumption data created sucessfully!", res);
-                                                                                            return [2, res.status(statusCode_1.statusCode.OK).json({
-                                                                                                    message: 'Power consumption data created sucessfully!',
-                                                                                                    data: data
-                                                                                                })];
-                                                                                    }
-                                                                                });
-                                                                            }); })
-                                                                                .catch(function (err) {
-                                                                                (0, logger_1.loggerUtil)(err, 'ERROR');
-                                                                                return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                                                                    error: 'Error while creating Power consumption data'
-                                                                                });
-                                                                            })];
-                                                                    case 1:
-                                                                        _a.sent();
-                                                                        return [3, 3];
-                                                                    case 2:
-                                                                        res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                                                                            error: 'Power consumption data for this month is already present for the user!'
-                                                                        });
-                                                                        _a.label = 3;
-                                                                    case 3: return [2];
-                                                                }
-                                                            });
-                                                        }); });
-                                                    }
-                                                    return;
-                                                });
-                                                return [2];
-                                            });
-                                        }); });
-                                    }
-                                }
-                                else {
-                                    res
-                                        .status(statusCode_1.statusCode.BAD_REQUEST)
-                                        .json({ error: 'No Monthly Plan Found for this month.' });
-                                }
-                                return [2];
-                            });
-                        }); });
+                _c.trys.push([1, 12, 13, 14]);
+                _a = req.body, fileName = _a.fileName, totalConsumption = _a.totalConsumption, totalGreenConsumption = _a.totalGreenConsumption, date = _a.date, month = _a.month, year = _a.year, fullDate = _a.fullDate;
+                return [4, index_1.prisma.montlyConsumptionPlan.findMany({
+                        where: {
+                            userId: userId,
+                            month: +month,
+                            year: +year
+                        }
                     })];
             case 2:
-                _a.sent();
-                return [3, 5];
+                existingData = _c.sent();
+                if (!existingData.length) return [3, 10];
+                return [4, (0, awss3_1.getSignedUrlForDocs)('PowerConsumption', fileName, userId)];
             case 3:
-                err_1 = _a.sent();
-                (0, logger_1.loggerUtil)(err_1, 'ERROR');
-                return [3, 5];
+                _b = _c.sent(), url = _b.url, key = _b.key;
+                dataPrisma = {
+                    date: +date || new Date().getDate(),
+                    month: +month || new Date().getMonth() + 1,
+                    year: +year || new Date().getFullYear(),
+                    fullDate: fullDate ? new Date(fullDate) : new Date(),
+                    totalConsumption: totalConsumption,
+                    totalGreenConsumption: totalGreenConsumption,
+                    userId: userId,
+                    ebBillLocation: '',
+                    location: key
+                };
+                queryObj = {
+                    month: +month,
+                    year: +year,
+                    userId: userId
+                };
+                return [4, (0, crud_1.getAllByQuery)(index_1.prisma.powerConsumption, queryObj)];
             case 4:
-                (0, logger_1.loggerUtil)("Create Power Consumption API Called!");
+                existingRecord = _c.sent();
+                if (!(existingRecord.length === 0)) return [3, 8];
+                return [4, (0, crud_2.create)(index_1.prisma.powerConsumption, dataPrisma)];
+            case 5:
+                newRecord = _c.sent();
+                if (!newRecord) return [3, 7];
+                return [4, (0, crud_2.getById)(index_1.prisma.user, 'id', userId)];
+            case 6:
+                userData = _c.sent();
+                (0, logUser_1.loguser)(userData === null || userData === void 0 ? void 0 : userData.id, userData === null || userData === void 0 ? void 0 : userData.name, userData === null || userData === void 0 ? void 0 : userData.role, 'Power consumption data created successfully!', newRecord);
+                return [2, res.status(statusCode_1.statusCode.OK).json({
+                        message: 'Power consumption data created successfully!',
+                        data: newRecord,
+                        url: url
+                    })];
+            case 7: return [3, 9];
+            case 8: return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                    error: 'Power consumption data for this month is already present for the user!'
+                })];
+            case 9: return [3, 11];
+            case 10: return [2, res
+                    .status(statusCode_1.statusCode.BAD_REQUEST)
+                    .json({ error: 'No Monthly Plan Found for this month.' })];
+            case 11: return [3, 14];
+            case 12:
+                err_1 = _c.sent();
+                (0, logger_1.loggerUtil)(err_1, 'ERROR');
+                return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                        error: 'Error while creating Power consumption data'
+                    })];
+            case 13:
+                (0, logger_1.loggerUtil)('Create Power Consumption API Called!');
                 return [7];
-            case 5: return [2];
+            case 14: return [2];
         }
     });
 }); };
@@ -476,43 +396,40 @@ var deletePowerConsumption = function (req, res) { return __awaiter(void 0, void
 }); };
 exports.deletePowerConsumption = deletePowerConsumption;
 var getPowerConsumptionById = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var powerConsumptionId, err_5;
+    var powerConsumptionId, data, url, err_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 powerConsumptionId = +(req.params.powerConsumptionId || '0');
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, 4, 5]);
-                return [4, (0, crud_2.getById)(index_1.prisma.powerConsumption, 'id', powerConsumptionId)
-                        .then(function (data) {
-                        if ((0, lodash_1.isEmpty)(data)) {
-                            return res.status(statusCode_1.statusCode.NOT_FOUND).json({
-                                message: 'Power consumption data was not found!'
-                            });
-                        }
-                        return res.status(statusCode_1.statusCode.OK).json({
-                            message: 'Power consumption data fetched sucessfully!',
-                            data: data
-                        });
-                    })
-                        .catch(function (err) {
-                        (0, logger_1.loggerUtil)(err, 'ERROR');
-                        return res.status(statusCode_1.statusCode.BAD_REQUEST).json({
-                            error: 'Error while fetching Power consumption data'
-                        });
-                    })];
+                _a.trys.push([1, 4, 5, 6]);
+                return [4, (0, crud_2.getById)(index_1.prisma.powerConsumption, 'id', powerConsumptionId)];
             case 2:
-                _a.sent();
-                return [3, 5];
+                data = _a.sent();
+                if ((0, lodash_1.isEmpty)(data)) {
+                    return [2, res.status(statusCode_1.statusCode.NOT_FOUND).json({
+                            message: 'Power consumption data was not found!'
+                        })];
+                }
+                return [4, (0, awss3_2.getObjectUrl)(data.location)];
             case 3:
+                url = _a.sent();
+                data.url = url;
+                return [2, res.status(statusCode_1.statusCode.OK).json({
+                        message: 'Power consumption data fetched successfully!',
+                        data: data
+                    })];
+            case 4:
                 err_5 = _a.sent();
                 (0, logger_1.loggerUtil)(err_5, 'ERROR');
-                return [3, 5];
-            case 4:
-                (0, logger_1.loggerUtil)("Get Power consumption API Called!");
+                return [2, res.status(statusCode_1.statusCode.BAD_REQUEST).json({
+                        error: 'Error while fetching power consumption data'
+                    })];
+            case 5:
+                (0, logger_1.loggerUtil)('Get Power consumption API Called!');
                 return [7];
-            case 5: return [2];
+            case 6: return [2];
         }
     });
 }); };
